@@ -81,3 +81,56 @@ def test_estimator_uses_structural_numbers():
     assert concrete_item["qty"] == pytest.approx(s["foundation"]["concrete_m3"],
                                                  rel=1e-3)
     assert any("anchors" in i["label"] for i in by_key["foundation"]["items"])
+
+
+def test_solidity_reduces_wind_force():
+    # Same geometry: open ring (solidity 0.15) must catch far less wind
+    # than a solid panel (solidity 0.95).
+    mesh, geo = _ring(4.0)
+    open_meta = {**mesh["metadata"], "family": "open_ring"}
+    solid_meta = {**mesh["metadata"], "family": "relief_panel"}
+    s_open = structural.compute_structural(BRIEF, geo, open_meta)
+    s_solid = structural.compute_structural(BRIEF, geo, solid_meta)
+    assert s_open["solidity"] < s_solid["solidity"]
+    assert s_open["wind_force_kn"] < 0.3 * s_solid["wind_force_kn"]
+
+
+def test_jet_reaction_adds_moment():
+    mesh, geo = _ring(4.0)
+    hyd = {"total_flow_lps": 20.0, "nozzle_pressure_head_m": 8.0}
+    dry = structural.compute_structural(BRIEF, geo, mesh["metadata"])
+    wet = structural.compute_structural(BRIEF, geo, mesh["metadata"],
+                                        hydraulics=hyd)
+    assert wet["loads"]["jet_reaction_kn"] > 0
+    assert wet["total_base_moment_knm"] > dry["total_base_moment_knm"]
+
+
+def test_analysis_block_and_safety_factors():
+    mesh, geo = _ring(4.0)
+    s = structural.compute_structural(BRIEF, geo, mesh["metadata"])
+    ana = s["analysis"]
+    assert ana["deflection_mm"] > 0
+    assert ana["natural_frequency_hz"] > 0
+    assert isinstance(ana["resonance_risk"], bool)
+    sf = s["safety_factors"]
+    for key in ("overturning", "sliding", "anchor_tension", "buckling", "yield"):
+        assert key in sf
+    assert sf["buckling"] is None or sf["buckling"] > 1.0
+    assert isinstance(sf["all_pass"], bool)
+
+
+def test_taller_means_more_deflection():
+    short, short_geo = _ring(2.0)
+    tall, tall_geo = _ring(6.0)
+    s_short = structural.compute_structural(BRIEF, short_geo, short["metadata"])
+    s_tall = structural.compute_structural(BRIEF, tall_geo, tall["metadata"])
+    assert s_tall["analysis"]["deflection_mm"] > s_short["analysis"]["deflection_mm"]
+
+
+def test_indoor_all_horizontal_loads_zero():
+    mesh, geo = _ring(4.0)
+    s = structural.compute_structural(
+        {**BRIEF, "constraints": {"indoor": True}}, geo, mesh["metadata"])
+    assert s["loads"]["total_horizontal_kn"] == 0.0
+    assert s["safety_factors"]["all_pass"] is True
+    assert s["foundation"]["bearing_kpa"] > 0

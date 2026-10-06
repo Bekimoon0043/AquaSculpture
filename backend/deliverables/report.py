@@ -138,26 +138,46 @@ def engineering_report_pages(brief: dict, sculpture_meta: dict, geo: dict,
     if structural:
         plate = structural["base_plate"]
         fdn = structural["foundation"]
+        ana = structural["analysis"]
+        sf = structural["safety_factors"]
+        loads = structural["loads"]
         pages.append([
             ("Structural (preliminary)", 16),
             (f"Wind zone: {structural['wind_zone']}"
              + (" (indoor — no wind load)" if structural["indoor"] else ""), 11),
             (f"Velocity pressure q = {structural['velocity_pressure_pa']:.0f} Pa "
-             f"(V = {structural['wind_speed_ms']:.0f} m/s)", 11),
-            (f"Projected area: {structural['projected_area_m2']:.2f} m2, "
-             f"shape factor {structural['shape_factor']}", 11),
-            (f"Wind force: {structural['wind_force_kn']:.2f} kN", 11),
-            (f"Overturning moment at base: {structural['overturning_moment_knm']:.2f} kNm",
-             11),
+             f"(V = {structural['wind_speed_ms']:.0f} m/s), gust "
+             f"{structural['gust_factor']}, Cd {structural['drag_coefficient']}, "
+             f"solidity {structural['solidity']}", 11),
+            (f"Loads — wind {loads['wind_kn']:.2f} kN, jet reaction "
+             f"{loads['jet_reaction_kn']:.2f} kN, seismic {loads['seismic_kn']:.2f} kN, "
+             f"dead {loads['dead_kn']:.2f} kN", 11),
+            (f"Base moment: {structural['total_base_moment_knm']:.2f} kNm", 11),
+            (f"Deflection {ana['deflection_mm']:.1f} mm (limit "
+             f"{ana['deflection_limit_mm']:.0f} mm), stress "
+             f"{ana['stress_mpa']:.1f} MPa", 11),
+            (f"Natural frequency {ana['natural_frequency_hz']:.2f} Hz vs vortex "
+             f"{ana['vortex_shedding_hz']:.2f} Hz — resonance risk: "
+             f"{'YES' if ana['resonance_risk'] else 'no'}", 11),
             (f"Base plate {plate['side_m']:.2f} m, {plate['bolt_count']} bolts: "
              f"tension {plate['bolt_tension_kn']:.1f} kN vs allowable "
              f"{plate['bolt_allowable_kn']:.0f} kN — "
              f"{'OK' if plate['bolts_ok'] else 'FAIL'}", 11),
             (f"Foundation pad {fdn['pad_side_m']:.2f} x {fdn['pad_side_m']:.2f} x "
              f"{fdn['pad_depth_m']:.2f} m = {fdn['concrete_m3']:.2f} m3 concrete, "
-             f"rebar {fdn['rebar_kg']:.0f} kg", 11),
+             f"rebar {fdn['rebar_kg']:.0f} kg, bearing {fdn['bearing_kpa']:.0f} kPa",
+             11),
             (f"Armature steel: {structural['armature']['steel_kg']:.1f} kg "
              f"(slenderness {structural['armature']['slenderness']:.1f})", 11),
+            ("Safety factors (required " + f"{sf['required']})" +
+             ": overturning {ov}, sliding {sl}, anchors {an}, buckling {bu}, "
+             "yield {yi} — {verdict}".format(
+                 ov=sf["overturning"] if sf["overturning"] is not None else "n/a",
+                 sl=sf["sliding"] if sf["sliding"] is not None else "n/a",
+                 an=sf["anchor_tension"] if sf["anchor_tension"] is not None else "n/a",
+                 bu=sf["buckling"] if sf["buckling"] is not None else "n/a",
+                 yi=sf["yield"] if sf["yield"] is not None else "n/a",
+                 verdict="ALL PASS" if sf["all_pass"] else "CHECK FAILURES"), 11),
             ("", 8),
             (structural["disclaimer"], 10),
         ])

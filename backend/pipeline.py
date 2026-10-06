@@ -63,7 +63,8 @@ def run_pipeline(brief: dict) -> dict:
     basin_meta = basin["metadata"] if basin else None
 
     hyd = hydraulics.compute_hydraulics(brief, basin_meta)
-    struct = structural.compute_structural(brief, geo, ring["metadata"])
+    struct = structural.compute_structural(brief, geo, ring["metadata"],
+                                           hydraulics=hyd)
     cost = estimator.estimate(brief, ring["metadata"], basin_meta, hyd,
                               structural=struct)
 
