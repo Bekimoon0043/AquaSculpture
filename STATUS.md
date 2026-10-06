@@ -3,17 +3,17 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 30%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 35%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
 | 1 | AI Concept Generation | 4% | **2** | Interpreter live (DeepSeek→Claude→OpenAI chain, schema-validated briefs). Next: multi-concept alternatives, image/sketch input |
 | 2 | Parametric Geometry | 7% | **3** | 9 parametric archetypes incl. figurative; parameter change re-runs all engineering. Next: full edit-param→recalc UI, more families |
 | 3 | Geometry Integrity | 5% | **1** | Watertightness proven in tests for revolve archetypes only. Next: pipeline validation gate (manifold/intersection/connectivity checks) |
-| 4 | Material Engineering | 4% | **1** | Catalog has density/cost/shell thickness only. Next: strength/fatigue/weldability properties + AI material recommendation |
-| 5 | Structural Load Engine | 7% | **2** | Dead + simplified ASCE 7 wind load. Next: gust factors, mesh vs solid aero, water/dynamic/seismic loads |
-| 6 | Structural/FEA Analysis | 7% | **1** | Overturning/shear hand calcs only. Next: buckling/deflection/natural frequency; CalculiX FEA integration |
-| 7 | Foundation/Anchors | 4% | **2** | Base plate sizing + 4-bolt tension check + pad volume. Next: pull-out/bearing calcs + foundation drawing output |
+| 4 | Material Engineering | 4% | **2** | 10 materials with full property set (yield/tensile/E/thermal/corrosion/weldability/finishes). Next: AI material recommendation by environment+loads |
+| 5 | Structural Load Engine | 7% | **3** | Dead + wind (gust, drag, solidity per family) + water jet reaction + seismic base shear. Next: snow/maintenance/thermal loads, site wind input |
+| 6 | Structural/FEA Analysis | 7% | **2** | Deflection, stress, Euler buckling, natural frequency + resonance screen, safety factors (anchored/freestanding). Next: CalculiX FEA integration |
+| 7 | Foundation/Anchors | 4% | **3** | Base plate + bolt tension SF + pad with soil bearing check + rebar. Next: pull-out calcs + foundation drawing output |
 | 8 | Hydraulic Engineering | 7% | **3** | Weir/jet flow, pipe sizing (velocity bands), Hazen-Williams, TDH, pump duty, turnover. Next: full network (manifold/branch/valve losses), nozzle trajectory |
 | 9 | Water Simulation | 4% | **1** | Flow/height computed numerically; no visual water yet. Next: jet trajectories + water surface in the 3D viewer |
 | 10 | Pump/Equipment Selection | 3% | **2** | Duty point + equipment catalog pricing. Next: real pump curves, model selection from supplier DB |
