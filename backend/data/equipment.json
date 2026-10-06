@@ -19,5 +19,9 @@
     "name": "DMX controller (1 universe)",
     "unit_price_usd": 350.0
   },
-  "cable_per_m_usd": 4.5
+  "cable_per_m_usd": 4.5,
+  "valve_ball_usd": 45.0,
+  "valve_butterfly_usd": 120.0,
+  "manifold_lot_usd": 400.0,
+  "sand_filter_per_m2_usd": 1800.0
 }

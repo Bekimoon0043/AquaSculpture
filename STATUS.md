@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 45%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 47%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -14,9 +14,9 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 5 | Structural Load Engine | 7% | **3** | Dead + wind (gust, drag, solidity per family) + water jet reaction + seismic base shear. Next: snow/maintenance/thermal loads, site wind input |
 | 6 | Structural/FEA Analysis | 7% | **2** | Deflection, stress, Euler buckling, natural frequency + resonance screen, safety factors (anchored/freestanding). Next: CalculiX FEA integration |
 | 7 | Foundation/Anchors | 4% | **3** | Base plate + bolt tension SF + pad with soil bearing check + rebar. Next: pull-out calcs + foundation drawing output |
-| 8 | Hydraulic Engineering | 7% | **3** | Weir/jet flow, pipe sizing (velocity bands), Hazen-Williams, TDH, pump duty, turnover. Next: full network (manifold/branch/valve losses), nozzle trajectory |
+| 8 | Hydraulic Engineering | 7% | **4** | Full network: branch pipes + fitting K-losses, manifold, valve sizing, jet trajectory/height, filtration sizing, pump/nozzle/valve/pipe schedules. Next: pressure-dependent balancing, surge transients |
 | 9 | Water Simulation | 4% | **1** | Flow/height computed numerically; no visual water yet. Next: jet trajectories + water surface in the 3D viewer |
-| 10 | Pump/Equipment Selection | 3% | **2** | Duty point + equipment catalog pricing. Next: real pump curves, model selection from supplier DB |
+| 10 | Pump/Equipment Selection | 3% | **3** | Pump/nozzle/valve/pipe/filter schedules auto-generated + priced in BOM. Next: real pump curves + supplier model selection |
 | 11 | Lighting Engineering | 5% | **3** | Placement engine (uplight ring + submersible), full fixture specs, PSU/DMX/cable/voltage-drop engineering, fixture schedule, G6 gate live. Next: wider fixture catalog, zoning |
 | 12 | Lighting Simulation | 3% | **2** | Point-source lux over shell faces: avg/max/coverage + wasted-fixture detection. Next: heat-map visualization, glare/reflection |
 | 13 | Dynamic Lighting | 3% | **0** | — Next: timeline editor (delegate show control to AquaFlow per scope §31) |

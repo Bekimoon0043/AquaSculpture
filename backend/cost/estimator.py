@@ -137,7 +137,7 @@ def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
                                  WATERPROOFING_PER_M2))
     sections.append({"key": "basin", "label": "BASIN", "items": basin_items})
 
-    # MECHANICAL (pumps, nozzles, piping)
+    # MECHANICAL (pumps, nozzles, valves, filtration, piping)
     mech_items: list[dict] = []
     motor_kw = hydraulics["motor_kw"]
     if motor_kw > 0:
@@ -151,9 +151,22 @@ def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
             price = nozzles[feat["nozzle"]]["unit_price_usd"]
             mech_items.append(_item(f"{nozzles[feat['nozzle']]['name']}",
                                     feat["count"], "ea", price))
+        if feat.get("valve"):
+            vkey = "valve_ball_usd" if feat["valve"]["type"] == "ball" else "valve_butterfly_usd"
+            mech_items.append(_item(f"Valve DN{feat['valve']['dn']} ({feat['valve']['type']})",
+                                    1, "ea", equipment[vkey]))
         if feat.get("flow_lps", 0) > 0:
             mech_items.append(_item(f"Piping ({feat['type']})", 1, "lot",
                                     equipment["piping_per_feature_usd"]))
+    if hydraulics.get("manifold") and hydraulics["manifold"]["branches"]:
+        mech_items.append(_item(f"Manifold DN{hydraulics['manifold']['dn']} "
+                                f"x{hydraulics['manifold']['branches']} branches",
+                                1, "lot", equipment["manifold_lot_usd"]))
+    if hydraulics.get("filtration"):
+        filt = hydraulics["filtration"]
+        mech_items.append(_item(f"Sand filter {filt['filter_area_m2']} m2",
+                                filt["filter_area_m2"], "m2",
+                                equipment["sand_filter_per_m2_usd"]))
     sections.append({"key": "mechanical", "label": "MECHANICAL", "items": mech_items})
 
     # ELECTRICAL (engineered lighting schedule when available, else counts)

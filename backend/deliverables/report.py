@@ -104,17 +104,37 @@ def engineering_report_pages(brief: dict, sculpture_meta: dict, geo: dict,
 
     hyd = [("Hydraulics", 16)]
     for feat in hydraulics["features"]:
-        hyd.append((f"{feat['type']}: {feat['flow_lps']:.2f} L/s", 11))
+        line = f"{feat['type']}: {feat['flow_lps']:.2f} L/s"
+        if feat.get("pipe"):
+            line += (f"  |  DN{feat['pipe']['dn']} branch, loss "
+                     f"{feat.get('branch_loss_m', 0):.2f} m "
+                     f"(friction {feat.get('branch_friction_m', 0):.2f} + "
+                     f"fittings {feat.get('fitting_loss_m', 0):.2f})")
+        if feat.get("jet_height_m"):
+            line += f"  |  jet height {feat['jet_height_m']:.2f} m"
+        hyd.append((line, 11))
     hyd += [
         (f"Total flow: {hydraulics['total_flow_lps']:.2f} L/s", 11),
         (f"TDH: {hydraulics['tdh_m']:.2f} m (static {hydraulics['static_lift_m']:.2f} + "
-         f"friction {hydraulics['friction_head_m']:.2f} + nozzle "
+         f"main friction {hydraulics['friction_head_m']:.2f} + worst branch "
+         f"{hydraulics.get('worst_branch_loss_m', 0):.2f} + nozzle "
          f"{hydraulics['nozzle_pressure_head_m']:.2f})", 11),
         (f"Pump motor: {hydraulics['motor_kw']:.2f} kW", 11),
     ]
     if hydraulics.get("main_pipe"):
         hyd.append((f"Main pipe: DN{hydraulics['main_pipe']['dn']} at "
                     f"{hydraulics['main_pipe']['velocity_ms']:.2f} m/s", 11))
+    if hydraulics.get("manifold"):
+        m = hydraulics["manifold"]
+        hyd.append((f"Manifold: DN{m['dn']} x {m['branches']} branches", 11))
+    if hydraulics.get("filtration"):
+        filt = hydraulics["filtration"]
+        hyd.append((f"Filtration: {filt['type']} {filt['filter_area_m2']} m2 "
+                    f"({filt['flow_m3h']} m3/h)", 11))
+    if hydraulics.get("schedules", {}).get("valves"):
+        vlist = ", ".join(f"DN{v['dn']} {v['type']}"
+                          for v in hydraulics["schedules"]["valves"])
+        hyd.append((f"Valves: {vlist}", 11))
     if hydraulics.get("turnover_min"):
         hyd.append((f"Basin turnover: {hydraulics['turnover_min']:.1f} min", 11))
 
