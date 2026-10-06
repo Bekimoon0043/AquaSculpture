@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 42%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 45%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -17,8 +17,8 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 8 | Hydraulic Engineering | 7% | **3** | Weir/jet flow, pipe sizing (velocity bands), Hazen-Williams, TDH, pump duty, turnover. Next: full network (manifold/branch/valve losses), nozzle trajectory |
 | 9 | Water Simulation | 4% | **1** | Flow/height computed numerically; no visual water yet. Next: jet trajectories + water surface in the 3D viewer |
 | 10 | Pump/Equipment Selection | 3% | **2** | Duty point + equipment catalog pricing. Next: real pump curves, model selection from supplier DB |
-| 11 | Lighting Engineering | 5% | **1** | Fixture counts + cost lines. Next: fixture specs (lumens/beam/IP/DMX), placement engine |
-| 12 | Lighting Simulation | 3% | **0** | — Next: lux heat-map estimation |
+| 11 | Lighting Engineering | 5% | **3** | Placement engine (uplight ring + submersible), full fixture specs, PSU/DMX/cable/voltage-drop engineering, fixture schedule, G6 gate live. Next: wider fixture catalog, zoning |
+| 12 | Lighting Simulation | 3% | **2** | Point-source lux over shell faces: avg/max/coverage + wasted-fixture detection. Next: heat-map visualization, glare/reflection |
 | 13 | Dynamic Lighting | 3% | **0** | — Next: timeline editor (delegate show control to AquaFlow per scope §31) |
 | 14 | Kinetic Engineering | 3% | **0** | — Later phase per scope |
 | 15 | Structural Skeleton Generator | 5% | **3** | Spine + shell-reaching ribs + base frame; SHS auto-selected from base moment (Z_req); viewer x-ray mode; BOM uses real member weight. Next: diagrid/bracing, multiple spine layouts |

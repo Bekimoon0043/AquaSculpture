@@ -11,7 +11,7 @@ from deliverables import bom, dxf, export_3d, report
 def build_package(brief: dict, sculpture_mesh: dict, sculpture_meta: dict,
                   geo: dict, basin_mesh: dict | None, basin_meta: dict | None,
                   hydraulics: dict, cost: dict, structural: dict | None = None,
-                  panels: list | None = None) -> bytes:
+                  panels: list | None = None, lighting: dict | None = None) -> bytes:
     """Returns ZIP bytes: brief.json, sculpture.stl, sculpture.glb, bom.xlsx,
     report.pdf, panels.dxf (flat patterns), manifest.json (SHA-256)."""
     meshes = [{"name": "sculpture", **sculpture_mesh}]
@@ -23,7 +23,7 @@ def build_package(brief: dict, sculpture_mesh: dict, sculpture_meta: dict,
     xlsx_bytes = bom.build_xlsx(bom.cost_tree_rows(cost))
     pdf_bytes = report.build_pdf(
         report.engineering_report_pages(brief, sculpture_meta, geo, basin_meta,
-                                        hydraulics, cost, structural))
+                                        hydraulics, cost, structural, lighting))
     brief_bytes = json.dumps(brief, indent=2).encode("utf-8")
 
     artifacts = {

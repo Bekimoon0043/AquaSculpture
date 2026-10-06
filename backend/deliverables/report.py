@@ -60,7 +60,8 @@ def build_pdf(pages: list[list[tuple[str, int]]]) -> bytes:
 
 def engineering_report_pages(brief: dict, sculpture_meta: dict, geo: dict,
                              basin_meta: dict | None, hydraulics: dict,
-                             cost: dict, structural: dict | None = None
+                             cost: dict, structural: dict | None = None,
+                             lighting: dict | None = None
                              ) -> list[list[tuple[str, int]]]:
     project = brief.get("project") or {}
     sculpture = brief.get("sculpture") or {}
@@ -183,4 +184,28 @@ def engineering_report_pages(brief: dict, sculpture_meta: dict, geo: dict,
         ])
 
     pages.append(cost_page)
+    if lighting:
+        illum = lighting["illumination"]
+        ctrl = lighting["controls"]
+        page = [
+            ("Lighting engineering", 16),
+            (f"Fixtures: {ctrl['fixture_count']}  |  total load "
+             f"{ctrl['total_load_w']:.0f} W  |  PSUs: {ctrl['psu_count']} x "
+             f"{ctrl['psu_wattage']:.0f} W", 11),
+            (f"Illuminance on shell: avg {illum['avg_lux']:.0f} lux, max "
+             f"{illum['max_lux']:.0f} lux, coverage {illum['coverage_pct']:.0f}% "
+             f"above {illum['min_lux_target']:.0f} lux", 11),
+            (f"DMX: {ctrl['dmx_channels_used']} channels / "
+             f"{ctrl['dmx_universes']} universe(s); max voltage drop "
+             f"{ctrl['max_voltage_drop_v']} V — "
+             f"{'OK' if ctrl['voltage_drop_ok'] else 'FAIL'}", 11),
+            ("", 6),
+            ("Fixture schedule:", 12),
+        ]
+        for r in ctrl["schedule"]:
+            page.append((f"  {r['id']}  {r['fixture']}  {r['power_w']} W  "
+                         f"DMX {r['dmx_address']}  cable {r['cable_run_m']} m",
+                         10))
+        pages.append(page)
+
     return pages

@@ -34,6 +34,7 @@ def get_package(brief: dict):
         cost=result["cost"],
         structural=result["structural"],
         panels=result.get("panels"),
+        lighting=result.get("lighting"),
     )
     name = (result["brief"].get("project") or {}).get("name", "sculptflow")
     safe = "".join(c if c.isalnum() or c in " _-" else "_" for c in name)

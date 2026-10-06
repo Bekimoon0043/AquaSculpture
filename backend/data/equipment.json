@@ -1,7 +1,23 @@
 {
-  "pump": { "per_kw_usd": 650.0, "base_usd": 400.0 },
-  "led_uplight": { "unit_price_usd": 120.0 },
-  "submersible_rgb": { "unit_price_usd": 95.0 },
+  "pump": {
+    "per_kw_usd": 650.0,
+    "base_usd": 400.0
+  },
+  "led_uplight": {
+    "unit_price_usd": 120.0
+  },
+  "submersible_rgb": {
+    "unit_price_usd": 95.0
+  },
   "piping_per_feature_usd": 250.0,
-  "electrical_balance_fraction": 0.15
+  "electrical_balance_fraction": 0.15,
+  "psu_320w": {
+    "name": "PSU 24V 320W IP67",
+    "unit_price_usd": 95.0
+  },
+  "dmx_controller": {
+    "name": "DMX controller (1 universe)",
+    "unit_price_usd": 350.0
+  },
+  "cable_per_m_usd": 4.5
 }

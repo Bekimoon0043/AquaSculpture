@@ -1,0 +1,28 @@
+{
+  "uplight_36w_rgbw": {
+    "name": "LED uplight 36W RGBW IP68",
+    "power_w": 36,
+    "voltage_v": 24,
+    "lumens": 2400,
+    "beam_angle_deg": 25,
+    "cct": "RGBW 3000K",
+    "cri": 85,
+    "ip_rating": "IP68",
+    "control": "DMX512",
+    "dmx_channels": 4,
+    "unit_price_usd": 185.0
+  },
+  "submersible_12w_rgb": {
+    "name": "Submersible LED 12W RGB IP68",
+    "power_w": 12,
+    "voltage_v": 24,
+    "lumens": 800,
+    "beam_angle_deg": 30,
+    "cct": "RGB",
+    "cri": 80,
+    "ip_rating": "IP68",
+    "control": "DMX512",
+    "dmx_channels": 3,
+    "unit_price_usd": 120.0
+  }
+}

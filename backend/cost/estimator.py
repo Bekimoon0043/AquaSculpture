@@ -32,7 +32,8 @@ def _item(label: str, qty: float, unit: str, unit_price: float) -> dict:
 
 def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
              hydraulics: dict, structural: dict | None = None,
-             skeleton: dict | None = None, panels: dict | None = None) -> dict:
+             skeleton: dict | None = None, panels: dict | None = None,
+             lighting: dict | None = None) -> dict:
     materials = _load("materials.json")
     basin_materials = _load("basin_materials.json")
     equipment = _load("equipment.json")
@@ -155,19 +156,42 @@ def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
                                     equipment["piping_per_feature_usd"]))
     sections.append({"key": "mechanical", "label": "MECHANICAL", "items": mech_items})
 
-    # ELECTRICAL (lighting + balance of system)
-    lighting = brief.get("lighting") or {}
-    uplights = lighting.get("sculpture_uplights", 0)
-    submersible = lighting.get("submersible_rgb", 0)
-    elec_items = [
-        _item("LED uplight", uplights, "ea", equipment["led_uplight"]["unit_price_usd"]),
-        _item("Submersible RGB", submersible, "ea",
-              equipment["submersible_rgb"]["unit_price_usd"]),
-    ]
-    light_total = sum(i["amount"] for i in elec_items)
-    elec_items.append(_item("Drivers, cabling, panels (15%)",
-                            light_total * equipment["electrical_balance_fraction"],
-                            "lot", 1.0))
+    # ELECTRICAL (engineered lighting schedule when available, else counts)
+    light_brief = brief.get("lighting") or {}
+    if lighting:
+        catalog = _load("lighting.json")
+        ctrl = lighting["controls"]
+        elec_items = []
+        by_name: dict[str, int] = {}
+        for row in ctrl["schedule"]:
+            by_name[row["fixture"]] = by_name.get(row["fixture"], 0) + 1
+        for name, qty in by_name.items():
+            cat_key = next(k for k, v in catalog.items() if v["name"] == name)
+            elec_items.append(_item(name, qty, "ea",
+                                    catalog[cat_key]["unit_price_usd"]))
+        elec_items.append(_item(f"PSU 24V {ctrl['psu_wattage']:.0f}W",
+                                ctrl["psu_count"], "ea",
+                                equipment["psu_320w"]["unit_price_usd"]))
+        if ctrl["dmx_universes"]:
+            elec_items.append(_item("DMX controller",
+                                    ctrl["dmx_universes"], "ea",
+                                    equipment["dmx_controller"]["unit_price_usd"]))
+        cable_m = sum(r["cable_run_m"] for r in ctrl["schedule"])
+        elec_items.append(_item("Cable (engineered runs)", cable_m, "m",
+                                equipment["cable_per_m_usd"]))
+    else:
+        uplights = light_brief.get("sculpture_uplights", 0)
+        submersible = light_brief.get("submersible_rgb", 0)
+        elec_items = [
+            _item("LED uplight", uplights, "ea",
+                  equipment["led_uplight"]["unit_price_usd"]),
+            _item("Submersible RGB", submersible, "ea",
+                  equipment["submersible_rgb"]["unit_price_usd"]),
+        ]
+        light_total = sum(i["amount"] for i in elec_items)
+        elec_items.append(_item("Drivers, cabling, panels (15%)",
+                                light_total * equipment["electrical_balance_fraction"],
+                                "lot", 1.0))
     sections.append({"key": "electrical", "label": "ELECTRICAL", "items": elec_items})
 
     # TRANSPORT & INSTALL

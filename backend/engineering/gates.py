@@ -22,7 +22,8 @@ GATES = [
 
 
 def evaluate_gates(brief: dict, integrity: dict, structural: dict,
-                   hydraulics: dict, cost: dict, panels: dict | None = None) -> dict:
+                   hydraulics: dict, cost: dict, panels: dict | None = None,
+                   lighting: dict | None = None) -> dict:
     results: dict[str, dict] = {}
 
     def put(gid, status, note=""):
@@ -67,8 +68,28 @@ def evaluate_gates(brief: dict, integrity: dict, structural: dict,
         put("G5", "pass", f"total flow {flow:.1f} L/s, "
                           f"pump {hydraulics.get('motor_kw', 0):.1f} kW")
 
-    # G6: lighting subsystem not built yet.
-    put("G6", "not_evaluated", "lighting engineering not built yet")
+    # G6: lighting engineering (scope §11–§15).
+    if lighting is None:
+        put("G6", "not_evaluated", "lighting engineering not run")
+    elif lighting["controls"]["fixture_count"] == 0:
+        put("G6", "warning", "no fixtures in brief — sculpture unlit at night")
+    else:
+        illum = lighting["illumination"]
+        ctrl = lighting["controls"]
+        if not ctrl["voltage_drop_ok"]:
+            put("G6", "fail",
+                f"voltage drop {ctrl['max_voltage_drop_v']} V exceeds limit")
+        elif illum["coverage_pct"] < 60:
+            put("G6", "warning",
+                f"only {illum['coverage_pct']:.0f}% of surface above "
+                f"{illum['min_lux_target']:.0f} lux"
+                + (f"; {illum['wasted_fixtures']} fixture(s) miss the sculpture"
+                   if illum["wasted_fixtures"] else ""))
+        else:
+            put("G6", "pass",
+                f"{ctrl['fixture_count']} fixtures, {illum['avg_lux']:.0f} lux avg, "
+                f"{illum['coverage_pct']:.0f}% coverage, "
+                f"{ctrl['dmx_universes']} DMX universe(s)")
 
     # G7: panelization/fabrication feasibility (scope §16–§19).
     if panels is None:

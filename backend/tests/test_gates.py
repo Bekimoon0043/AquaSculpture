@@ -27,7 +27,8 @@ def test_gates_present_in_engineering_run():
     assert gates["G0"]["status"] == "pass"
     assert gates["G2"]["status"] in ("pass", "warning")
     assert gates["G4"]["status"] in ("pass", "fail")
-    assert gates["G6"]["status"] == "not_evaluated"
+    assert gates["G6"]["status"] in ("pass", "warning", "fail")  # lighting live
+    assert gates["G8"]["status"] == "not_evaluated"
     assert isinstance(body["gates"]["production_ready"], bool)
 
 

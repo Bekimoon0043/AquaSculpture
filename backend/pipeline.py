@@ -77,10 +77,16 @@ def run_pipeline(brief: dict) -> dict:
     # Panelization (scope §16/§18): shell -> manufacturable panels.
     panels = panelize.panelize_shell(ring["vertices"], ring["faces"])
 
+    # Lighting engineering (scope §11/§12/§15).
+    from engineering import lighting
+    light = lighting.design_lighting(brief, geo, ring["vertices"], ring["faces"],
+                                     basin_meta)
+
     cost = estimator.estimate(brief, ring["metadata"], basin_meta, hyd,
-                              structural=struct, skeleton=skel, panels=panels)
+                              structural=struct, skeleton=skel, panels=panels,
+                              lighting=light)
     gate_result = gates.evaluate_gates(brief, integ, struct, hyd, cost,
-                                       panels=panels)
+                                       panels=panels, lighting=light)
 
     # Lift the sculpture so its base sits on the basin floor (or y=0).
     base_y = geo["bounding_box"]["min"][1]
@@ -99,6 +105,7 @@ def run_pipeline(brief: dict) -> dict:
         "skeleton": skel,
         "panelization": {k: v for k, v in panels.items() if k != "panels"},
         "panels": panels["panels"],
+        "lighting": light,
         "gates": gate_result,
         "cost": cost,
         "sculpture_offset_m": sculpture_offset_m,
