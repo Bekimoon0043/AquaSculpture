@@ -1,4 +1,9 @@
-# SculptFlow Studio — Master Plan
+# LuxuryForm Studio — Master Plan
+
+> **Note:** the governing product scope is `LUXURYFORM_SCOPE.md` (the final
+> product goal). This file is the working implementation plan; current
+> subsystem scores are tracked in `STATUS.md`. Product renamed from working
+> title "SculptFlow Studio" → **LuxuryForm Studio**.
 
 **Prompt-to-engineering design software for sculptures and fountains.**
 The user types what they want. The software designs it, engineers it, prices it, and delivers the 3D model + full documentation package.
