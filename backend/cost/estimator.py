@@ -32,7 +32,7 @@ def _item(label: str, qty: float, unit: str, unit_price: float) -> dict:
 
 def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
              hydraulics: dict, structural: dict | None = None,
-             skeleton: dict | None = None) -> dict:
+             skeleton: dict | None = None, panels: dict | None = None) -> dict:
     materials = _load("materials.json")
     basin_materials = _load("basin_materials.json")
     equipment = _load("equipment.json")
@@ -51,13 +51,22 @@ def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
 
     # SCULPTURE SHELL
     polish_h_per_m2 = rates["polish_hours_per_m2"].get(finish, 3.0)
-    sections.append({"key": "shell", "label": "SCULPTURE SHELL", "items": [
+    shell_items = [
         _item(f"Shell material ({material['name']})", mass_kg, "kg",
               material["cost_per_kg"]),
         _item("Panelization labor", surface_area * rates["panelization_hours_per_m2"],
               "h", labor),
         _item(f"Finish labor ({finish})", surface_area * polish_h_per_m2, "h", labor),
-    ]})
+    ]
+    # Panelization v2 (scope §16/§18/§19): real panel data adds CNC cutting
+    # and welding length. Cutting length ~ 2x weld seam (two panel edges per seam).
+    if panels:
+        seam_m = panels["total_weld_seam_m"]
+        shell_items.append(_item("CNC cutting (flat patterns)", seam_m * 2.0, "m",
+                                 rates["cnc_cutting_cost_per_m"]))
+        shell_items.append(_item(f"Welding ({panels['panel_count']} panels)",
+                                 seam_m, "m", rates["welding_cost_per_m"]))
+    sections.append({"key": "shell", "label": "SCULPTURE SHELL", "items": shell_items})
 
     # ARMATURE (generated skeleton when available, then structural calc,
     # else 25% heuristic)

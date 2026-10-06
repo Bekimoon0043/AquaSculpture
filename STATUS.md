@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 38%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 42%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -22,8 +22,8 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 13 | Dynamic Lighting | 3% | **0** | — Next: timeline editor (delegate show control to AquaFlow per scope §31) |
 | 14 | Kinetic Engineering | 3% | **0** | — Later phase per scope |
 | 15 | Structural Skeleton Generator | 5% | **3** | Spine + shell-reaching ribs + base frame; SHS auto-selected from base moment (Z_req); viewer x-ray mode; BOM uses real member weight. Next: diagrid/bracing, multiple spine layouts |
-| 16 | Panelization | 4% | **1** | Labor-hours estimate only. Next: surface → panels → flat-pattern DXF |
-| 17 | Welding Engineering | 3% | **0** | — Next: weld seam map from panelization |
+| 16 | Panelization | 4% | **3** | Shell auto-panelized (sector×band), flat patterns via PCA+hull, curvature classification, stock-sheet check, G7 gate live. Next: developable-surface unrolling for double-curved panels |
+| 17 | Welding Engineering | 3% | **2** | Weld seam map + total length from panelization, costed in BOM. Next: weld types/sizes, sequence, distortion |
 | 18 | Internal Service Routing | 3% | **0** | — Next: pipe/cable routing through sculpture interior |
 | 19 | Maintainability | 2% | **0** | — Next: access checks + inspection flags |
 | 20 | Fabrication Sequencing | 2% | **0** | — Next: method-statement generator |
@@ -32,7 +32,7 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 23 | Engineering AI Copilot | 4% | **1** | Brief-level interpretation works. Next: consequence evaluation ("20% taller → +42% overturning…") |
 | 24 | Multi-Agent Review | 2% | **0** | — Next: reviewer roles after copilot matures |
 | 25 | Optimization | 2% | **0** | — Next: goal-driven parameter search |
-| 26 | CAD/Manufacturing Export | 4% | **2** | STL + GLB export. Next: DXF drawings/flat patterns, then STEP/IGES |
+| 26 | CAD/Manufacturing Export | 4% | **3** | STL + GLB + flat-pattern DXF cutting sheets in ZIP package. Next: GA drawings, STEP/IGES |
 | 27 | Engineering Documentation | 3% | **2** | PDF report + XLSX BOM + ZIP manifest. Next: dedicated structural/hydraulic/foundation reports, GA drawings |
 | 28 | Visualization | 2% | **2** | 3D viewport, studio env lighting, finishes. Next: water/night rendering, site integration |
 | 29 | AquaFlow Integration | 2% | **0** | — Next: fixture/nozzle/DMX export envelope (read AquaFlow schemas, no code duplication) |

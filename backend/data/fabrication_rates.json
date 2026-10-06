@@ -24,5 +24,7 @@
     "pad_side_per_height": 0.4,
     "pad_min_side_m": 1.5,
     "base_plate_lot_usd": 250.0
-  }
+  },
+  "welding_cost_per_m": 45.0,
+  "cnc_cutting_cost_per_m": 12.0
 }

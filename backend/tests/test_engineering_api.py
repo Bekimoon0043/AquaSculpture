@@ -53,4 +53,7 @@ def test_package_endpoint_returns_zip():
     zf = zipfile.ZipFile(io.BytesIO(resp.content))
     assert "manifest.json" in zf.namelist()
     manifest = json.loads(zf.read("manifest.json"))
-    assert len(manifest) == 5
+    assert len(manifest) == 6  # brief, stl, glb, bom, report, panels.dxf
+    assert "panels.dxf" in zf.namelist()
+    dxf_text = zf.read("panels.dxf").decode("ascii")
+    assert "LWPOLYLINE" in dxf_text and dxf_text.rstrip().endswith("EOF")

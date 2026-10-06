@@ -70,12 +70,17 @@ def run_pipeline(brief: dict) -> dict:
 
     # Fabrication: internal skeleton sized from the structural base moment
     # (scope §15, §17). Its real steel weight feeds the BOM.
-    from fabrication import skeleton
+    from fabrication import panelize, skeleton
     skel = skeleton.generate_skeleton(brief, geo, struct,
                                       shell_vertices=ring["vertices"])
+
+    # Panelization (scope §16/§18): shell -> manufacturable panels.
+    panels = panelize.panelize_shell(ring["vertices"], ring["faces"])
+
     cost = estimator.estimate(brief, ring["metadata"], basin_meta, hyd,
-                              structural=struct, skeleton=skel)
-    gate_result = gates.evaluate_gates(brief, integ, struct, hyd, cost)
+                              structural=struct, skeleton=skel, panels=panels)
+    gate_result = gates.evaluate_gates(brief, integ, struct, hyd, cost,
+                                       panels=panels)
 
     # Lift the sculpture so its base sits on the basin floor (or y=0).
     base_y = geo["bounding_box"]["min"][1]
@@ -92,6 +97,8 @@ def run_pipeline(brief: dict) -> dict:
         "structural": struct,
         "integrity": integ,
         "skeleton": skel,
+        "panelization": {k: v for k, v in panels.items() if k != "panels"},
+        "panels": panels["panels"],
         "gates": gate_result,
         "cost": cost,
         "sculpture_offset_m": sculpture_offset_m,

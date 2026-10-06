@@ -5,15 +5,15 @@ import io
 import json
 import zipfile
 
-from deliverables import bom, export_3d, report
+from deliverables import bom, dxf, export_3d, report
 
 
 def build_package(brief: dict, sculpture_mesh: dict, sculpture_meta: dict,
                   geo: dict, basin_mesh: dict | None, basin_meta: dict | None,
-                  hydraulics: dict, cost: dict, structural: dict | None = None
-                  ) -> bytes:
+                  hydraulics: dict, cost: dict, structural: dict | None = None,
+                  panels: list | None = None) -> bytes:
     """Returns ZIP bytes: brief.json, sculpture.stl, sculpture.glb, bom.xlsx,
-    report.pdf, manifest.json (SHA-256 of every artifact)."""
+    report.pdf, panels.dxf (flat patterns), manifest.json (SHA-256)."""
     meshes = [{"name": "sculpture", **sculpture_mesh}]
     if basin_mesh:
         meshes.append({"name": "basin", **basin_mesh})
@@ -33,6 +33,8 @@ def build_package(brief: dict, sculpture_mesh: dict, sculpture_meta: dict,
         "bom.xlsx": xlsx_bytes,
         "report.pdf": pdf_bytes,
     }
+    if panels:
+        artifacts["panels.dxf"] = dxf.flat_patterns_bytes(panels)
     manifest = {name: hashlib.sha256(data).hexdigest()
                 for name, data in artifacts.items()}
 

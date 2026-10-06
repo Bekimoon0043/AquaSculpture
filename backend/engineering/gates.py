@@ -22,7 +22,7 @@ GATES = [
 
 
 def evaluate_gates(brief: dict, integrity: dict, structural: dict,
-                   hydraulics: dict, cost: dict) -> dict:
+                   hydraulics: dict, cost: dict, panels: dict | None = None) -> dict:
     results: dict[str, dict] = {}
 
     def put(gid, status, note=""):
@@ -67,9 +67,25 @@ def evaluate_gates(brief: dict, integrity: dict, structural: dict,
         put("G5", "pass", f"total flow {flow:.1f} L/s, "
                           f"pump {hydraulics.get('motor_kw', 0):.1f} kW")
 
-    # G6–G8: subsystems not built yet.
+    # G6: lighting subsystem not built yet.
     put("G6", "not_evaluated", "lighting engineering not built yet")
-    put("G7", "not_evaluated", "panelization/fabrication checks not built yet")
+
+    # G7: panelization/fabrication feasibility (scope §16–§19).
+    if panels is None:
+        put("G7", "not_evaluated", "panelization not run")
+    elif panels["oversized_panels"]:
+        put("G7", "fail",
+            f"panels exceed stock sheet {panels['sheet_max_m']}: "
+            f"{panels['oversized_panels']}")
+    elif panels["double_curved_share"] > 0.3:
+        put("G7", "warning",
+            f"{panels['double_curved_share']:.0%} double-curved panels need "
+            "stamping/hydroforming")
+    else:
+        put("G7", "pass",
+            f"{panels['panel_count']} panels, all fit stock sheet, "
+            f"weld {panels['total_weld_seam_m']:.1f} m")
+
     put("G8", "not_evaluated", "maintainability analysis not built yet")
 
     # G9: cost vs budget (budget optional).
