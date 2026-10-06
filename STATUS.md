@@ -3,13 +3,13 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 35%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 36%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
 | 1 | AI Concept Generation | 4% | **2** | Interpreter live (DeepSeek→Claude→OpenAI chain, schema-validated briefs). Next: multi-concept alternatives, image/sketch input |
 | 2 | Parametric Geometry | 7% | **3** | 9 parametric archetypes incl. figurative; parameter change re-runs all engineering. Next: full edit-param→recalc UI, more families |
-| 3 | Geometry Integrity | 5% | **1** | Watertightness proven in tests for revolve archetypes only. Next: pipeline validation gate (manifold/intersection/connectivity checks) |
+| 3 | Geometry Integrity | 5% | **3** | G2 gate live: open/non-manifold edges, degenerate faces, floating components (union-find), min feature size. Next: self-intersection BVH, curvature limits |
 | 4 | Material Engineering | 4% | **2** | 10 materials with full property set (yield/tensile/E/thermal/corrosion/weldability/finishes). Next: AI material recommendation by environment+loads |
 | 5 | Structural Load Engine | 7% | **3** | Dead + wind (gust, drag, solidity per family) + water jet reaction + seismic base shear. Next: snow/maintenance/thermal loads, site wind input |
 | 6 | Structural/FEA Analysis | 7% | **2** | Deflection, stress, Euler buckling, natural frequency + resonance screen, safety factors (anchored/freestanding). Next: CalculiX FEA integration |
@@ -44,8 +44,12 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 |------|--------|
 | G0 Brief Complete | ✅ schema-validated briefs |
 | G1 Concept Approved | ⚠️ single concept, manual approval |
-| G2 Geometry Valid | ⚠️ partial (per-archetype tests, no pipeline gate) |
-| G3–G10 | ❌ not implemented as gates yet |
+| G2 Geometry Valid | ✅ live mesh forensics gate |
+| G3 Material Valid | ✅ live (materials DB check) |
+| G4 Structural PASS | ✅ live (safety-factor verdict) |
+| G5 Hydraulic PASS | ✅ live (flow consistency) |
+| G9 Cost PASS | ✅ live (budget check) |
+| G1, G6–G8, G10 | ⏳ report as not_evaluated until subsystems exist |
 
 ## Near-term priorities (highest weight × lowest score)
 

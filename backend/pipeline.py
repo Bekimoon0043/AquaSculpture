@@ -8,7 +8,7 @@ Used by /api/geometry/generate, /api/engineering/run and
 from fastapi import HTTPException
 
 from cost import estimator
-from engineering import geo_calc, hydraulics, structural
+from engineering import gates, geo_calc, hydraulics, integrity, structural
 from geometry.archetypes import GENERATORS, generate
 from geometry.basin import generate_basin
 
@@ -68,6 +68,10 @@ def run_pipeline(brief: dict) -> dict:
     cost = estimator.estimate(brief, ring["metadata"], basin_meta, hyd,
                               structural=struct)
 
+    # Geometry forensics + design gates (scope §3, §28).
+    integ = integrity.validate_mesh(ring["vertices"], ring["faces"])
+    gate_result = gates.evaluate_gates(brief, integ, struct, hyd, cost)
+
     # Lift the sculpture so its base sits on the basin floor (or y=0).
     base_y = geo["bounding_box"]["min"][1]
     floor_y = basin_meta["floor_thickness_m"] if basin_meta else 0.0
@@ -81,6 +85,8 @@ def run_pipeline(brief: dict) -> dict:
         "geo_quantities": geo,
         "hydraulics": hyd,
         "structural": struct,
+        "integrity": integ,
+        "gates": gate_result,
         "cost": cost,
         "sculpture_offset_m": sculpture_offset_m,
     }
