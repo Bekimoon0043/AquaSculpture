@@ -1,0 +1,7 @@
+{
+  "pump": { "per_kw_usd": 650.0, "base_usd": 400.0 },
+  "led_uplight": { "unit_price_usd": 120.0 },
+  "submersible_rgb": { "unit_price_usd": 95.0 },
+  "piping_per_feature_usd": 250.0,
+  "electrical_balance_fraction": 0.15
+}

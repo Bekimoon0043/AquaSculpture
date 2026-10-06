@@ -1,0 +1,20 @@
+{
+  "bubbler_dn25": {
+    "name": "Bubbler jet DN25",
+    "k_lps_per_sqrt_bar": 1.2,
+    "design_pressure_bar": 1.0,
+    "unit_price_usd": 85
+  },
+  "foam_jet_dn40": {
+    "name": "Foam jet DN40",
+    "k_lps_per_sqrt_bar": 2.5,
+    "design_pressure_bar": 1.5,
+    "unit_price_usd": 140
+  },
+  "geyser_jet_dn50": {
+    "name": "Geyser jet DN50",
+    "k_lps_per_sqrt_bar": 4.0,
+    "design_pressure_bar": 2.0,
+    "unit_price_usd": 210
+  }
+}

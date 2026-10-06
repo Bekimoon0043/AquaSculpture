@@ -1,0 +1,13 @@
+{
+  "name": "sculptflow-studio-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Electron shell for SculptFlow Studio",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}

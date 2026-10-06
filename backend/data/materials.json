@@ -1,0 +1,20 @@
+{
+  "stainless_316l": {
+    "name": "Stainless steel 316L",
+    "density_kg_m3": 7990,
+    "default_shell_thickness_m": 0.003,
+    "cost_per_kg": 9.0
+  },
+  "bronze": {
+    "name": "Cast bronze",
+    "density_kg_m3": 8800,
+    "default_shell_thickness_m": 0.006,
+    "cost_per_kg": 28.0
+  },
+  "grc": {
+    "name": "Glass-fibre reinforced concrete",
+    "density_kg_m3": 2100,
+    "default_shell_thickness_m": 0.015,
+    "cost_per_kg": 4.5
+  }
+}

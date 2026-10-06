@@ -1,0 +1,6 @@
+{
+  "black_granite": { "name": "Black granite cladding", "cladding_per_m2": 180.0 },
+  "marble": { "name": "Marble cladding", "cladding_per_m2": 150.0 },
+  "stainless": { "name": "Stainless basin cladding", "cladding_per_m2": 220.0 },
+  "concrete_tile": { "name": "Concrete tile", "cladding_per_m2": 80.0 }
+}

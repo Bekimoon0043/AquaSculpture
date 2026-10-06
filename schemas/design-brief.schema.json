@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sculptflow.studio/schemas/design-brief.schema.json",
+  "title": "SculptFlow Design Brief",
+  "description": "The contract between the AI interpreter and the deterministic engineering engine (PLAN.md §3).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["project", "sculpture", "water", "lighting", "constraints"],
+  "properties": {
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "site": { "type": "string" },
+        "budget_usd": { "type": ["number", "null"], "exclusiveMinimum": 0 }
+      }
+    },
+    "sculpture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "height_m", "material", "finish"],
+      "properties": {
+        "family": {
+          "type": "string",
+          "enum": [
+            "open_ring",
+            "crescent_inner",
+            "ribbon_knot",
+            "organic_flame",
+            "stacked_rings",
+            "stacked_c_rings",
+            "twisted_torus",
+            "arc_fin_array",
+            "relief_panel",
+            "buddha_seated",
+            "torus_knot",
+            "mobius_ribbon",
+            "wave_surface",
+            "geodesic_shell",
+            "voronoi_shell",
+            "spiral_column",
+            "heightfield_relief"
+          ]
+        },
+        "height_m": { "type": "number", "exclusiveMinimum": 0 },
+        "material": {
+          "type": "string",
+          "enum": [
+            "stainless_304",
+            "stainless_316l",
+            "bronze",
+            "brass",
+            "grc",
+            "fiberglass",
+            "corten_steel",
+            "aluminum"
+          ]
+        },
+        "finish": {
+          "type": "string",
+          "enum": [
+            "mirror_polish_8",
+            "mirror",
+            "brushed",
+            "hairline",
+            "textured",
+            "hammered",
+            "polished",
+            "patina",
+            "painted"
+          ]
+        },
+        "parameters": { "type": "object" },
+        "style_notes": { "type": "string" }
+      }
+    },
+    "water": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["features"],
+      "properties": {
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "still_basin",
+                  "bubbler_field",
+                  "foam_jet_field",
+                  "water_sheet",
+                  "curtain_from_sculpture",
+                  "curtain_between_elements",
+                  "rain_curtain",
+                  "perimeter_mist",
+                  "perimeter_weir"
+                ]
+              },
+              "count": { "type": "integer", "minimum": 1 },
+              "spill_edge_length_m": { "type": "number", "exclusiveMinimum": 0 },
+              "head_m": { "type": "number", "exclusiveMinimum": 0 },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        "basin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["shape"],
+          "properties": {
+            "shape": {
+              "type": "string",
+              "enum": ["circular", "rectangular", "elliptical", "polygonal"]
+            },
+            "diameter_m": { "type": "number", "exclusiveMinimum": 0 },
+            "length_m": { "type": "number", "exclusiveMinimum": 0 },
+            "width_m": { "type": "number", "exclusiveMinimum": 0 },
+            "depth_m": { "type": "number", "exclusiveMinimum": 0 },
+            "material": { "type": "string" },
+            "overflow": {
+              "type": "string",
+              "enum": ["perimeter_weir", "slot_overflow", "skimmer", "none"]
+            }
+          }
+        }
+      }
+    },
+    "lighting": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sculpture_uplights": { "type": "integer", "minimum": 0 },
+        "submersible_rgb": { "type": "integer", "minimum": 0 },
+        "backlit_perforation": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "wind_zone": { "type": "string", "enum": ["low", "moderate", "high", "extreme"] },
+        "indoor": { "type": "boolean" },
+        "public_access": { "type": "boolean" },
+        "max_height_m": { "type": "number", "exclusiveMinimum": 0 },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

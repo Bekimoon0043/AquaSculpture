@@ -1,0 +1,28 @@
+{
+  "labor_rate_per_h": 65.0,
+  "panelization_hours_per_m2": 4.0,
+  "polish_hours_per_m2": {
+    "mirror_polish_8": 6.0,
+    "mirror": 6.0,
+    "brushed": 3.0,
+    "hairline": 3.0,
+    "textured": 4.0,
+    "hammered": 4.5,
+    "polished": 5.0,
+    "patina": 2.0,
+    "painted": 2.5
+  },
+  "armature": {
+    "mass_fraction_of_sculpture": 0.25,
+    "steel_cost_per_kg": 3.5
+  },
+  "foundation": {
+    "concrete_per_m3": 180.0,
+    "rebar_kg_per_m3": 110.0,
+    "rebar_per_kg": 1.8,
+    "pad_depth_m": 0.6,
+    "pad_side_per_height": 0.4,
+    "pad_min_side_m": 1.5,
+    "base_plate_lot_usd": 250.0
+  }
+}
