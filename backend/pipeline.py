@@ -65,11 +65,16 @@ def run_pipeline(brief: dict) -> dict:
     hyd = hydraulics.compute_hydraulics(brief, basin_meta)
     struct = structural.compute_structural(brief, geo, ring["metadata"],
                                            hydraulics=hyd)
-    cost = estimator.estimate(brief, ring["metadata"], basin_meta, hyd,
-                              structural=struct)
-
     # Geometry forensics + design gates (scope §3, §28).
     integ = integrity.validate_mesh(ring["vertices"], ring["faces"])
+
+    # Fabrication: internal skeleton sized from the structural base moment
+    # (scope §15, §17). Its real steel weight feeds the BOM.
+    from fabrication import skeleton
+    skel = skeleton.generate_skeleton(brief, geo, struct,
+                                      shell_vertices=ring["vertices"])
+    cost = estimator.estimate(brief, ring["metadata"], basin_meta, hyd,
+                              structural=struct, skeleton=skel)
     gate_result = gates.evaluate_gates(brief, integ, struct, hyd, cost)
 
     # Lift the sculpture so its base sits on the basin floor (or y=0).
@@ -86,6 +91,7 @@ def run_pipeline(brief: dict) -> dict:
         "hydraulics": hyd,
         "structural": struct,
         "integrity": integ,
+        "skeleton": skel,
         "gates": gate_result,
         "cost": cost,
         "sculpture_offset_m": sculpture_offset_m,

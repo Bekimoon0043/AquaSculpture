@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 36%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 38%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -21,7 +21,7 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 12 | Lighting Simulation | 3% | **0** | — Next: lux heat-map estimation |
 | 13 | Dynamic Lighting | 3% | **0** | — Next: timeline editor (delegate show control to AquaFlow per scope §31) |
 | 14 | Kinetic Engineering | 3% | **0** | — Later phase per scope |
-| 15 | Structural Skeleton Generator | 5% | **1** | Armature estimated as % of shell mass. Next: actual member layout (tubes/RHS/ribs) |
+| 15 | Structural Skeleton Generator | 5% | **3** | Spine + shell-reaching ribs + base frame; SHS auto-selected from base moment (Z_req); viewer x-ray mode; BOM uses real member weight. Next: diagrid/bracing, multiple spine layouts |
 | 16 | Panelization | 4% | **1** | Labor-hours estimate only. Next: surface → panels → flat-pattern DXF |
 | 17 | Welding Engineering | 3% | **0** | — Next: weld seam map from panelization |
 | 18 | Internal Service Routing | 3% | **0** | — Next: pipe/cable routing through sculpture interior |

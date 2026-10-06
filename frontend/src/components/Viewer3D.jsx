@@ -21,6 +21,9 @@ export default function Viewer3D() {
   const controlsRef = useRef(null)
   const engineering = useBriefStore((s) => s.engineering)
   const [wireframe, setWireframe] = useState(false)
+  const [showSkeleton, setShowSkeleton] = useState(false)
+  const showSkeletonRef = useRef(false)
+  showSkeletonRef.current = showSkeleton
 
   useEffect(() => {
     const mount = mountRef.current
@@ -122,6 +125,19 @@ export default function Viewer3D() {
       group.add(toMesh(engineering.basin, stone))
     }
 
+    // Internal skeleton (scope §15) — x-ray overlay, toggled from the toolbar.
+    if (engineering.skeleton?.mesh?.vertices?.length) {
+      const skelMat = new THREE.MeshStandardMaterial({
+        color: 0xff9f43, roughness: 0.5, metalness: 0.4,
+        transparent: true, opacity: 0.9,
+      })
+      const skel = toMesh(engineering.skeleton.mesh, skelMat)
+      skel.name = 'skeleton'
+      skel.position.y = engineering.sculpture_offset_m
+      skel.visible = showSkeletonRef.current
+      group.add(skel)
+    }
+
     scene.add(group)
     groupRef.current = group
   }, [engineering])
@@ -129,9 +145,15 @@ export default function Viewer3D() {
   // Wireframe toggle applies to everything in the current model group.
   useEffect(() => {
     groupRef.current?.traverse((o) => {
-      if (o.material) o.material.wireframe = wireframe
+      if (o.material && o.name !== 'skeleton') o.material.wireframe = wireframe
     })
   }, [wireframe, engineering])
+
+  // Skeleton x-ray visibility.
+  useEffect(() => {
+    const skel = groupRef.current?.getObjectByName('skeleton')
+    if (skel) skel.visible = showSkeleton
+  }, [showSkeleton, engineering])
 
   function setView(preset) {
     const camera = cameraRef.current
@@ -167,6 +189,14 @@ export default function Viewer3D() {
           onClick={() => setWireframe((w) => !w)}
         >
           Wireframe
+        </button>
+        <button
+          className={`btn ${showSkeleton ? 'active' : ''}`}
+          onClick={() => setShowSkeleton((s) => !s)}
+          disabled={!engineering?.skeleton}
+          title="Show internal structural skeleton"
+        >
+          Skeleton
         </button>
       </div>
       {size && (

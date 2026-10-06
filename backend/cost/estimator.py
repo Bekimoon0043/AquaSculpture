@@ -31,7 +31,8 @@ def _item(label: str, qty: float, unit: str, unit_price: float) -> dict:
 
 
 def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
-             hydraulics: dict, structural: dict | None = None) -> dict:
+             hydraulics: dict, structural: dict | None = None,
+             skeleton: dict | None = None) -> dict:
     materials = _load("materials.json")
     basin_materials = _load("basin_materials.json")
     equipment = _load("equipment.json")
@@ -58,9 +59,14 @@ def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
         _item(f"Finish labor ({finish})", surface_area * polish_h_per_m2, "h", labor),
     ]})
 
-    # ARMATURE (structural calc when available, else 25% heuristic)
+    # ARMATURE (generated skeleton when available, then structural calc,
+    # else 25% heuristic)
     armature = rates["armature"]
-    if structural:
+    if skeleton:
+        steel_kg = skeleton["total_steel_kg"]
+        steel_label = (f"Skeleton steel ({skeleton['member_count']} members, "
+                       f"{skeleton['section']})")
+    elif structural:
         steel_kg = structural["armature"]["steel_kg"]
         steel_label = (f"Structural steel (slenderness "
                        f"{structural['armature']['slenderness']:.1f}, "
