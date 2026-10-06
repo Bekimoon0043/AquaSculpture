@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 49%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 50%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -35,7 +35,7 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 26 | CAD/Manufacturing Export | 4% | **3** | STL + GLB + flat-pattern DXF cutting sheets in ZIP package. Next: GA drawings, STEP/IGES |
 | 27 | Engineering Documentation | 3% | **2** | PDF report + XLSX BOM + ZIP manifest. Next: dedicated structural/hydraulic/foundation reports, GA drawings |
 | 28 | Visualization | 2% | **2** | 3D viewport, studio env lighting, finishes. Next: water/night rendering, site integration |
-| 29 | AquaFlow Integration | 2% | **0** | — Next: fixture/nozzle/DMX export envelope (read AquaFlow schemas, no code duplication) |
+| 29 | AquaFlow Integration | 2% | **3** | LUXEXCHANGE v1 export live: nozzles+flows, lights+DMX patch, pump/valves, embedded glTF, /api/integration/aquaflow. Next: AquaFlow-side import test, show-program return path |
 | 30 | Learning/CogniNet | 2% | **0** | — Final phase per scope §32 |
 
 ## Design gates (scope §28) — current state
