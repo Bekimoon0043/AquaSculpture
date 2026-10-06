@@ -85,8 +85,16 @@ def run_pipeline(brief: dict) -> dict:
     cost = estimator.estimate(brief, ring["metadata"], basin_meta, hyd,
                               structural=struct, skeleton=skel, panels=panels,
                               lighting=light)
+
+    # Internal services routing (scope §18/§20) + maintainability (§21).
+    from engineering import maintainability
+    from fabrication import routing
+    route = routing.design_routing(brief, geo, hyd, skel, light)
+    maint = maintainability.analyze_maintainability(brief, basin_meta, hyd,
+                                                    light, route)
     gate_result = gates.evaluate_gates(brief, integ, struct, hyd, cost,
-                                       panels=panels, lighting=light)
+                                       panels=panels, lighting=light,
+                                       routing=route, maintainability=maint)
 
     # Lift the sculpture so its base sits on the basin floor (or y=0).
     base_y = geo["bounding_box"]["min"][1]
@@ -106,6 +114,8 @@ def run_pipeline(brief: dict) -> dict:
         "panelization": {k: v for k, v in panels.items() if k != "panels"},
         "panels": panels["panels"],
         "lighting": light,
+        "routing": route,
+        "maintainability": maint,
         "gates": gate_result,
         "cost": cost,
         "sculpture_offset_m": sculpture_offset_m,

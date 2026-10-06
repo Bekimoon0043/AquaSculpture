@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 47%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 49%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -24,8 +24,8 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 15 | Structural Skeleton Generator | 5% | **3** | Spine + shell-reaching ribs + base frame; SHS auto-selected from base moment (Z_req); viewer x-ray mode; BOM uses real member weight. Next: diagrid/bracing, multiple spine layouts |
 | 16 | Panelization | 4% | **3** | Shell auto-panelized (sector×band), flat patterns via PCA+hull, curvature classification, stock-sheet check, G7 gate live. Next: developable-surface unrolling for double-curved panels |
 | 17 | Welding Engineering | 3% | **2** | Weld seam map + total length from panelization, costed in BOM. Next: weld types/sizes, sequence, distortion |
-| 18 | Internal Service Routing | 3% | **0** | — Next: pipe/cable routing through sculpture interior |
-| 19 | Maintainability | 2% | **0** | — Next: access checks + inspection flags |
+| 18 | Internal Service Routing | 3% | **2** | Water risers + power/DMX follow spine with enforced separation, bend-radius check, IP68 penetration schedule, drainage + hatch layout. Next: route geometry in 3D viewer |
+| 19 | Maintainability | 2% | **3** | 8-class serviceability analysis (pump/nozzle/lighting/valve/drain/internal/cleaning/corrosion), G8 gate live, deep-basin nozzle flag works. Next: time/stock-based service schedules |
 | 20 | Fabrication Sequencing | 2% | **0** | — Next: method-statement generator |
 | 21 | BOM | 3% | **3** | Itemized XLSX BOM auto-generated from geometry. Next: category expansion (control/mechanical), BOQ format |
 | 22 | Cost/Quotation | 3% | **3** | Full cost tree, contingency/margin, budget check, opex. Next: quotation document, regional price books |

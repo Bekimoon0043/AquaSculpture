@@ -23,7 +23,8 @@ GATES = [
 
 def evaluate_gates(brief: dict, integrity: dict, structural: dict,
                    hydraulics: dict, cost: dict, panels: dict | None = None,
-                   lighting: dict | None = None) -> dict:
+                   lighting: dict | None = None, routing: dict | None = None,
+                   maintainability: dict | None = None) -> dict:
     results: dict[str, dict] = {}
 
     def put(gid, status, note=""):
@@ -107,7 +108,20 @@ def evaluate_gates(brief: dict, integrity: dict, structural: dict,
             f"{panels['panel_count']} panels, all fit stock sheet, "
             f"weld {panels['total_weld_seam_m']:.1f} m")
 
-    put("G8", "not_evaluated", "maintainability analysis not built yet")
+    # G8: maintainability (scope §21).
+    if maintainability is None:
+        put("G8", "not_evaluated", "maintainability analysis not run")
+    elif maintainability["passed"]:
+        put("G8", "pass", "all service classes accessible")
+    else:
+        put("G8", "fail", "; ".join(maintainability["flags"]))
+
+    # Routing problems also surface on G7 (fabrication feasibility).
+    if routing is not None and not routing["passed"]:
+        g7 = results.get("G7")
+        if g7 and g7["status"] == "pass":
+            results["G7"] = {"status": "warning",
+                             "note": "; ".join(routing["issues"])}
 
     # G9: cost vs budget (budget optional).
     if cost.get("budget_usd") is None:
