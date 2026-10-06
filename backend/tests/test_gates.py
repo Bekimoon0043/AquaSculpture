@@ -42,3 +42,16 @@ def test_gate_g9_fails_over_budget():
     assert gates["G9"]["status"] == "fail"
     assert resp.json()["gates"]["hard_fail"] is True
     assert resp.json()["gates"]["production_ready"] is False
+
+
+def test_water_viz_payload():
+    resp = client.post("/api/engineering/run", json=_brief())
+    viz = resp.json()["water_viz"]
+    assert viz is not None
+    assert viz["water_level_m"] > 0
+    assert len(viz["jets"]) == 12
+    for jet in viz["jets"]:
+        assert jet["exit_velocity_ms"] > 0
+        assert jet["jet_height_m"] > 0
+    assert len(viz["curtains"]) >= 1
+    assert viz["curtains"][0]["top_y"] > viz["curtains"][0]["bottom_y"]

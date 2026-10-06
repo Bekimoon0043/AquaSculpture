@@ -22,8 +22,13 @@ export default function Viewer3D() {
   const engineering = useBriefStore((s) => s.engineering)
   const [wireframe, setWireframe] = useState(false)
   const [showSkeleton, setShowSkeleton] = useState(false)
+  const [showWater, setShowWater] = useState(true)
   const showSkeletonRef = useRef(false)
   showSkeletonRef.current = showSkeleton
+  const showWaterRef = useRef(true)
+  showWaterRef.current = showWater
+  const waterRef = useRef(null)   // animated water particle systems
+  const clockRef = useRef(new THREE.Clock())
 
   useEffect(() => {
     const mount = mountRef.current
@@ -80,6 +85,21 @@ export default function Viewer3D() {
     function animate() {
       frameId = requestAnimationFrame(animate)
       controls.update()
+      // Ballistic jet particles (scope §10: trajectory + gravity).
+      const elapsed = clockRef.current.getElapsedTime()
+      if (waterRef.current?.jets) {
+        for (const jet of waterRef.current.jets) {
+          const { v0, origin, count, phases } = jet.userData
+          const pos = jet.geometry.attributes.position
+          const tMax = (2 * v0) / 9.81
+          for (let i = 0; i < count; i++) {
+            const t = (elapsed * 1.0 + phases[i] * tMax) % tMax
+            const y = Math.max(v0 * t - 4.905 * t * t, 0)
+            pos.setXYZ(i, origin[0], origin[1] + y, origin[2])
+          }
+          pos.needsUpdate = true
+        }
+      }
       renderer.render(scene, camera)
     }
     animate()
@@ -104,6 +124,14 @@ export default function Viewer3D() {
         o.material?.dispose()
       })
       groupRef.current = null
+    }
+    if (waterRef.current?.group) {
+      scene.remove(waterRef.current.group)
+      waterRef.current.group.traverse?.((o) => {
+        o.geometry?.dispose()
+        o.material?.dispose()
+      })
+      waterRef.current = null
     }
     if (!engineering) return
 
@@ -140,6 +168,61 @@ export default function Viewer3D() {
 
     scene.add(group)
     groupRef.current = group
+
+    // Water effects (scope §10): surface + animated jets + curtain sheets.
+    waterRef.current = null
+    const viz = engineering.water_viz
+    if (viz && showWaterRef.current) {
+      const waterGroup = new THREE.Group()
+      waterGroup.name = 'water'
+      const jetSystems = []
+
+      if (viz.basin_inner?.radius_m) {
+        const surface = new THREE.Mesh(
+          new THREE.CircleGeometry(viz.basin_inner.radius_m, 64),
+          new THREE.MeshStandardMaterial({
+            color: 0x1a4a6e, transparent: true, opacity: 0.75,
+            roughness: 0.05, metalness: 0.4, side: THREE.DoubleSide,
+          }))
+        surface.rotation.x = -Math.PI / 2
+        surface.position.y = viz.water_level_m
+        waterGroup.add(surface)
+      }
+
+      for (const j of viz.jets || []) {
+        const count = 24
+        const geoJ = new THREE.BufferGeometry()
+        geoJ.setAttribute('position',
+          new THREE.Float32BufferAttribute(new Float32Array(count * 3), 3))
+        const pts = new THREE.Points(geoJ, new THREE.PointsMaterial({
+          color: 0xbfe3ff, size: 0.07, transparent: true, opacity: 0.75,
+          blending: THREE.AdditiveBlending, depthWrite: false,
+        }))
+        pts.userData = {
+          v0: j.exit_velocity_ms, origin: j.position, count,
+          phases: Array.from({ length: count }, (_, i) => i / count),
+        }
+        jetSystems.push(pts)
+        waterGroup.add(pts)
+      }
+
+      for (const c of viz.curtains || []) {
+        const h = c.top_y - c.bottom_y
+        if (h <= 0) continue
+        const sheet = new THREE.Mesh(
+          new THREE.CylinderGeometry(c.radius_m, c.radius_m * 0.98, h, 48, 1, true),
+          new THREE.MeshStandardMaterial({
+            color: 0x9fd4ff, transparent: true, opacity: 0.22,
+            roughness: 0.1, side: THREE.DoubleSide, depthWrite: false,
+          }))
+        sheet.position.y = c.bottom_y + h / 2
+        waterGroup.add(sheet)
+      }
+
+      scene.add(waterGroup)
+      groupRef.current = group // keep model group reference
+      waterRef.current = { group: waterGroup, jets: jetSystems }
+    }
   }, [engineering])
 
   // Wireframe toggle applies to everything in the current model group.
@@ -154,6 +237,11 @@ export default function Viewer3D() {
     const skel = groupRef.current?.getObjectByName('skeleton')
     if (skel) skel.visible = showSkeleton
   }, [showSkeleton, engineering])
+
+  // Water visibility toggle.
+  useEffect(() => {
+    if (waterRef.current?.group) waterRef.current.group.visible = showWater
+  }, [showWater, engineering])
 
   function setView(preset) {
     const camera = cameraRef.current
@@ -197,6 +285,14 @@ export default function Viewer3D() {
           title="Show internal structural skeleton"
         >
           Skeleton
+        </button>
+        <button
+          className={`btn ${showWater ? 'active' : ''}`}
+          onClick={() => setShowWater((w) => !w)}
+          disabled={!engineering?.water_viz}
+          title="Show water effects"
+        >
+          Water
         </button>
       </div>
       {size && (

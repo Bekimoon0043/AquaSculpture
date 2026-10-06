@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 50%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 52%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -15,7 +15,7 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 6 | Structural/FEA Analysis | 7% | **2** | Deflection, stress, Euler buckling, natural frequency + resonance screen, safety factors (anchored/freestanding). Next: CalculiX FEA integration |
 | 7 | Foundation/Anchors | 4% | **3** | Base plate + bolt tension SF + pad with soil bearing check + rebar. Next: pull-out calcs + foundation drawing output |
 | 8 | Hydraulic Engineering | 7% | **4** | Full network: branch pipes + fitting K-losses, manifold, valve sizing, jet trajectory/height, filtration sizing, pump/nozzle/valve/pipe schedules. Next: pressure-dependent balancing, surge transients |
-| 9 | Water Simulation | 4% | **1** | Flow/height computed numerically; no visual water yet. Next: jet trajectories + water surface in the 3D viewer |
+| 9 | Water Simulation | 4% | **2** | Live viewer water: ballistic jet particles from real exit velocities, water surface, curtain sheets, gravity animation. Next: splash zones, mist, wind drift |
 | 10 | Pump/Equipment Selection | 3% | **3** | Pump/nozzle/valve/pipe/filter schedules auto-generated + priced in BOM. Next: real pump curves + supplier model selection |
 | 11 | Lighting Engineering | 5% | **3** | Placement engine (uplight ring + submersible), full fixture specs, PSU/DMX/cable/voltage-drop engineering, fixture schedule, G6 gate live. Next: wider fixture catalog, zoning |
 | 12 | Lighting Simulation | 3% | **2** | Point-source lux over shell faces: avg/max/coverage + wasted-fixture detection. Next: heat-map visualization, glare/reflection |
@@ -34,7 +34,7 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 25 | Optimization | 2% | **0** | — Next: goal-driven parameter search |
 | 26 | CAD/Manufacturing Export | 4% | **3** | STL + GLB + flat-pattern DXF cutting sheets in ZIP package. Next: GA drawings, STEP/IGES |
 | 27 | Engineering Documentation | 3% | **2** | PDF report + XLSX BOM + ZIP manifest. Next: dedicated structural/hydraulic/foundation reports, GA drawings |
-| 28 | Visualization | 2% | **2** | 3D viewport, studio env lighting, finishes. Next: water/night rendering, site integration |
+| 28 | Visualization | 2% | **3** | Viewport + studio lighting + water animation + skeleton x-ray + finish-accurate materials. Next: night mode, site photos |
 | 29 | AquaFlow Integration | 2% | **3** | LUXEXCHANGE v1 export live: nozzles+flows, lights+DMX patch, pump/valves, embedded glTF, /api/integration/aquaflow. Next: AquaFlow-side import test, show-program return path |
 | 30 | Learning/CogniNet | 2% | **0** | — Final phase per scope §32 |
 

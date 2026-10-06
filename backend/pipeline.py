@@ -101,6 +101,36 @@ def run_pipeline(brief: dict) -> dict:
     floor_y = basin_meta["floor_thickness_m"] if basin_meta else 0.0
     sculpture_offset_m = floor_y - base_y + 0.02
 
+    # Water visualization payload (scope §10): water surface level, ballistic
+    # jet definitions, curtain sheets — the viewer animates these.
+    water_viz = None
+    if basin_meta:
+        inner = basin_meta["inner"]
+        water_level = basin_meta["depth_m"] - basin_meta["freeboard_m"]
+        jets = []
+        jet_feats = [f for f in hyd["features"] if f.get("jet_height_m")]
+        if jet_feats and basin_meta.get("nozzle_positions"):
+            v0 = jet_feats[0]["exit_velocity_ms"]
+            h = jet_feats[0]["jet_height_m"]
+            for pos in basin_meta["nozzle_positions"]:
+                jets.append({"position": pos, "exit_velocity_ms": v0,
+                             "jet_height_m": h})
+        bbox = geo["bounding_box"]["size"]
+        curtains = [{"radius_m": round(max(bbox[0], bbox[2]) / 2 * 0.9, 3),
+                     "top_y": round(bbox[1] * 0.9 + sculpture_offset_m, 3),
+                     "bottom_y": water_level}
+                    for f in hyd["features"]
+                    if f["type"] in ("curtain_from_sculpture",
+                                     "curtain_between_elements",
+                                     "water_sheet", "rain_curtain")
+                    and f["flow_lps"] > 0]
+        water_viz = {
+            "water_level_m": water_level,
+            "basin_inner": inner,
+            "jets": jets,
+            "curtains": curtains,
+        }
+
     return {
         "brief": brief,
         "sculpture": {"mesh": {"vertices": ring["vertices"], "faces": ring["faces"]},
@@ -116,6 +146,7 @@ def run_pipeline(brief: dict) -> dict:
         "lighting": light,
         "routing": route,
         "maintainability": maint,
+        "water_viz": water_viz,
         "gates": gate_result,
         "cost": cost,
         "sculpture_offset_m": sculpture_offset_m,
