@@ -96,3 +96,62 @@ def ga_drawing_bytes(sculpture_mesh: dict, basin_mesh: dict | None,
                      title: str) -> bytes:
     return build_ga_drawing(sculpture_mesh, basin_mesh, title).encode(
         "ascii", errors="replace")
+
+
+def build_foundation_drawing(structural: dict,
+                             title: str = "Foundation Drawing") -> str:
+    """Foundation plan + section (scope §7): pad, bolt circle, dims."""
+    fdn = structural["foundation"]
+    plate = structural["base_plate"]
+    s = fdn["pad_side_m"]
+    d = fdn["pad_depth_m"]
+    bs = plate["bolt_spacing_m"]
+    n_bolts = plate["bolt_count"]
+
+    lines = ["0", "SECTION", "2", "ENTITIES"]
+
+    def rect(cx, cy, w, h):
+        pts = [(cx - w / 2, cy - h / 2), (cx + w / 2, cy - h / 2),
+               (cx + w / 2, cy + h / 2), (cx - w / 2, cy + h / 2)]
+        lines.extend(["0", "LWPOLYLINE", "8", "FOUNDATION", "90", "4", "70", "1"])
+        for x, y in pts:
+            lines.extend(["10", f"{x:.4f}", "20", f"{y:.4f}"])
+
+    def circle(cx, cy, r):
+        lines.extend(["0", "CIRCLE", "8", "FOUNDATION",
+                      "10", f"{cx:.4f}", "20", f"{cy:.4f}", "40", f"{r:.4f}"])
+
+    def text(x, y, h, t):
+        lines.extend(["0", "TEXT", "8", "LABELS",
+                      "10", f"{x:.4f}", "20", f"{y:.4f}", "40", f"{h:.3f}",
+                      "1", t])
+
+    # Plan: pad square + base plate + bolts on their circle.
+    rect(0, 0, s, s)
+    rect(0, 0, plate["side_m"], plate["side_m"])
+    import math
+    for i in range(n_bolts):
+        a = 2 * math.pi * i / n_bolts + math.pi / 4
+        circle(bs / math.sqrt(2) * math.cos(a), bs / math.sqrt(2) * math.sin(a),
+               0.02)
+    text(-s / 2, -s / 2 - 0.3, 0.15, f"PLAN: pad {s:.2f} x {s:.2f} m, "
+         f"{n_bolts} anchors, plate {plate['side_m']:.2f} m")
+
+    # Section: pad depth + plate thickness above grade.
+    sy = s + 1.5
+    rect(0, -sy, s, d)
+    rect(0, -sy + d / 2 + 0.05, plate["side_m"], 0.05)
+    text(-s / 2, -sy - d / 2 - 0.3, 0.15,
+         f"SECTION: depth {d:.2f} m, concrete {fdn['concrete_m3']:.2f} m3, "
+         f"rebar {fdn['rebar_kg']:.0f} kg")
+
+    text(-s / 2, -sy - d, 0.25, title)
+    text(-s / 2, -sy - d - 0.45, 0.12,
+         "LuxuryForm Studio — preliminary, not for construction")
+    lines.extend(["0", "ENDSEC", "0", "EOF"])
+    return "\n".join(lines) + "\n"
+
+
+def foundation_drawing_bytes(structural: dict, title: str) -> bytes:
+    return build_foundation_drawing(structural, title).encode(
+        "ascii", errors="replace")

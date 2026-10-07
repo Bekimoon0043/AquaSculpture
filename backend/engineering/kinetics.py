@@ -42,7 +42,7 @@ def mesh_inertia_about_axis(vertices, faces, mass_kg: float,
 
 
 def design_kinetics(brief: dict, geo: dict, vertices, faces,
-                    mass_kg: float) -> dict:
+                    mass_kg: float, basin_meta: dict | None = None) -> dict:
     kin = brief.get("kinetics") or {}
     motion = kin.get("motion", "rotation")
     axis = kin.get("axis", "y")
@@ -97,6 +97,17 @@ def design_kinetics(brief: dict, geo: dict, vertices, faces,
         radii = np.sqrt((v[:, 0] - cx) ** 2 + (v[:, 1] - (y0 + y1) / 2) ** 2)
     envelope_radius = float(radii.max())
 
+    # Collision check: swept envelope vs basin inner bounds (scope §16).
+    collision = None
+    if basin_meta and axis == "y":
+        inner = basin_meta.get("inner") or {}
+        if "radius_m" in inner:
+            clearance = inner["radius_m"] - envelope_radius
+            collision = {"basin_clearance_m": round(clearance, 3),
+                         "clearance_ok": clearance >= 0.3,
+                         "note": "rotating envelope must stay 0.3 m inside "
+                                 "the basin rim"}
+
     return {
         "motion": motion_desc,
         "axis": axis,
@@ -111,5 +122,6 @@ def design_kinetics(brief: dict, geo: dict, vertices, faces,
             "radius_m": round(envelope_radius, 3),
             "height_m": round(y1 - y0, 3),
         },
+        "collision": collision,
         "note": "Preliminary drive sizing — verify with motor supplier curves",
     }

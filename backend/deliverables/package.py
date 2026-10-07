@@ -41,6 +41,9 @@ def build_package(brief: dict, sculpture_mesh: dict, sculpture_meta: dict,
     artifacts["ga_drawing.dxf"] = drawings.ga_drawing_bytes(
         sculpture_mesh, basin_mesh,
         title=(brief.get("project") or {}).get("name", "GA Drawing"))
+    if structural:
+        artifacts["foundation.dxf"] = drawings.foundation_drawing_bytes(
+            structural, title="Foundation & Anchors")
     manifest = {name: hashlib.sha256(data).hexdigest()
                 for name, data in artifacts.items()}
 

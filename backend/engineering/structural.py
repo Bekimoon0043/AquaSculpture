@@ -51,11 +51,12 @@ DRAG_SOLID = 1.3                  # bluff solid body
 DRAG_OPEN = 0.9                   # open/perforated frame
 
 
-def wind_pressure_pa(wind_zone: str, indoor: bool = False) -> tuple[float, float]:
-    """(wind speed m/s, velocity pressure Pa)."""
+def wind_pressure_pa(wind_zone: str, indoor: bool = False,
+                     site_wind_ms: float | None = None) -> tuple[float, float]:
+    """(wind speed m/s, velocity pressure Pa). Site-measured speed wins."""
     if indoor:
         return 0.0, 0.0
-    v = WIND_ZONE_MS.get(wind_zone, WIND_ZONE_MS["moderate"])
+    v = site_wind_ms or WIND_ZONE_MS.get(wind_zone, WIND_ZONE_MS["moderate"])
     return v, 0.613 * v**2
 
 
@@ -64,7 +65,9 @@ def compute_structural(brief: dict, geo: dict, sculpture_meta: dict,
     constraints = brief.get("constraints") or {}
     wind_zone = constraints.get("wind_zone", "moderate")
     indoor = bool(constraints.get("indoor", False))
-    wind_speed, q_pa = wind_pressure_pa(wind_zone, indoor)
+    wind_speed, q_pa = wind_pressure_pa(
+        wind_zone, indoor,
+        site_wind_ms=constraints.get("site_wind_ms"))
 
     size = geo["bounding_box"]["size"]
     height_m = max(size[1], 0.1)
@@ -102,6 +105,28 @@ def compute_structural(brief: dict, geo: dict, sculpture_meta: dict,
     # ── Seismic (simplified base shear) ─────────────────────────────────
     seismic_kn = 0.0 if indoor else SEISMIC_ZONE_FACTOR * weight_kn
     seismic_moment_knm = seismic_kn * height_m / 2.0
+
+    # ── Snow + maintenance + thermal (scope §5: other loads) ────────────
+    snow_kn = 0.0
+    if not indoor:
+        # Horizontal projected area x 0.5 kN/m2 fresh-snow blanket.
+        horiz_area = max(size[0], 0.1) * max(size[2], 0.1)
+        snow_kn = 0.5 * horiz_area * solidity
+    maintenance_kn = 0.9 if constraints.get("public_access") else 0.0
+    # Thermal: expansion of the longest member over ±40 C swing.
+    thermal = {}
+    if sculpture_meta.get("material"):
+        import json as _json
+        from pathlib import Path as _Path
+        mats = _json.loads((_Path(__file__).resolve().parents[1]
+                            / "data" / "materials.json").read_text())
+        alpha = (mats.get(sculpture_meta["material"]) or {}).get(
+            "thermal_expansion_per_k", 1.2e-5)
+        longest = max(size)
+        thermal = {"expansion_mm": round(alpha * 40.0 * longest * 1000.0, 1),
+                   "delta_t_k": 40,
+                   "note": "provide slip joints / slotted holes at anchors"
+                   if alpha * 40.0 * longest > 0.01 else "negligible"}
 
     # ── Combined base loads ─────────────────────────────────────────────
     h_force_kn = wind_kn + jet_kn + seismic_kn
@@ -200,6 +225,9 @@ def compute_structural(brief: dict, geo: dict, sculpture_meta: dict,
             "jet_reaction_kn": round(jet_kn, 3),
             "seismic_kn": round(seismic_kn, 3),
             "dead_kn": round(weight_kn, 3),
+            "snow_kn": round(snow_kn, 3),
+            "maintenance_kn": round(maintenance_kn, 2),
+            "thermal": thermal,
             "total_horizontal_kn": round(h_force_kn, 3),
         },
         # Back-compat keys (wind-only) used by report/estimator:

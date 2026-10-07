@@ -14,7 +14,9 @@
       "properties": {
         "name": { "type": "string", "minLength": 1 },
         "site": { "type": "string" },
-        "budget_usd": { "type": ["number", "null"], "exclusiveMinimum": 0 }
+        "budget_usd": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "currency": { "type": "string" },
+        "currency_rate": { "type": "number", "exclusiveMinimum": 0 }
       }
     },
     "sculpture": {
@@ -151,6 +153,7 @@
         "indoor": { "type": "boolean" },
         "public_access": { "type": "boolean" },
         "max_height_m": { "type": "number", "exclusiveMinimum": 0 },
+        "site_wind_ms": { "type": "number", "exclusiveMinimum": 0 },
         "notes": { "type": "string" }
       }
     },

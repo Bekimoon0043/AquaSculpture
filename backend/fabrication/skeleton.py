@@ -113,9 +113,11 @@ def generate_skeleton(brief: dict, geo: dict, structural: dict,
                     "from": [cx, y0, cz], "to": [cx, y1 * 0.95, cz],
                     "length_m": round(y1 * 0.95 - y0, 3)})
 
-    # ── Ribs: spokes from spine toward the shell at regular stations ────
+    # ── Ribs: spokes from spine toward the shell at regular stations,
+    #    with diagonal braces triangulating spine<->rib tips (stiffness) ──
     band = max(0.05, height_m * 0.03)
     verts = np.asarray(shell_vertices, dtype=float) if shell_vertices is not None else None
+    prev_tips: list[tuple[float, float, float, float]] = []
     y = y0 + RIB_SPACING_M
     while y < y1 * 0.9:
         reach_x, reach_z = (x1 - x0) / 2.0, (z1 - z0) / 2.0
@@ -125,15 +127,29 @@ def generate_skeleton(brief: dict, geo: dict, structural: dict,
                 sel = verts[mask]
                 reach_x = float(np.abs(sel[:, 0] - cx).max())
                 reach_z = float(np.abs(sel[:, 2] - cz).max())
+        tips = []
         for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             reach = (reach_x if dx else reach_z) * RIB_REACH_FRACTION
             if reach < side_m:
                 continue
+            tip = (cx + dx * reach, y, cz + dz * reach)
+            tips.append(tip)
             members.append({
                 "kind": "rib", "section": "tube 40x2",
                 "from": [cx, y, cz],
-                "to": [cx + dx * reach, y, cz + dz * reach],
+                "to": list(tip),
                 "length_m": round(reach, 3)})
+        # Triangulate: brace each rib tip down to the previous station's spine.
+        if prev_tips:
+            prev_y = prev_tips[0][1]
+            for tip in tips:
+                brace = float(np.linalg.norm(
+                    np.subtract(tip, (cx, prev_y, cz))))
+                members.append({
+                    "kind": "brace", "section": "tube 40x2",
+                    "from": list(tip), "to": [cx, prev_y, cz],
+                    "length_m": round(brace, 3)})
+        prev_tips = tips
         y += RIB_SPACING_M
 
     # ── Base frame: square ring at the base, tied to the spine foot ─────

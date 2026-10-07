@@ -63,6 +63,9 @@ def run_pipeline(brief: dict) -> dict:
     basin_meta = basin["metadata"] if basin else None
 
     hyd = hydraulics.compute_hydraulics(brief, basin_meta)
+    # Wind drift / splash exclusion (scope §10).
+    from engineering import wind_drift
+    hyd["wind_drift"] = wind_drift.analyze_drift(brief, hyd)
     struct = structural.compute_structural(brief, geo, ring["metadata"],
                                            hydraulics=hyd)
 
@@ -137,7 +140,8 @@ def run_pipeline(brief: dict) -> dict:
     if brief.get("kinetics"):
         kin = kinetics.design_kinetics(brief, geo, ring["vertices"],
                                        ring["faces"], ring["metadata"]["mass_kg"]
-                                       + skel["total_steel_kg"])
+                                       + skel["total_steel_kg"],
+                                       basin_meta=basin_meta)
 
     cost = estimator.estimate(brief, ring["metadata"], basin_meta, hyd,
                               structural=struct, skeleton=skel, panels=panels,

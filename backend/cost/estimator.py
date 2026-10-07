@@ -241,9 +241,24 @@ def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
     budget = (brief.get("project") or {}).get("budget_usd")
     opex = round(motor_kw * OPEX_HOURS_PER_DAY * 365.0 * OPEX_TARIFF_PER_KWH, 2)
 
+    # BOQ (scope §23): flat item list with category/unit/rate/amount.
+    boq = [{"category": s["label"], "item": i["label"], "qty": i["qty"],
+            "unit": i["unit"], "rate_usd": i["unit_price"],
+            "amount_usd": i["amount"]}
+           for s in sections for i in s["items"]]
+
+    # Local currency presentation (scope §24): e.g. ETB for Ethiopian sites.
+    project = brief.get("project") or {}
+    currency = project.get("currency", "USD")
+    rate = project.get("currency_rate", 1.0)
+
     return {
         "currency": "USD",
+        "display_currency": currency,
+        "currency_rate": rate,
+        "total_display": round(total * rate, 2),
         "sections": sections,
+        "boq": boq,
         "subtotal_usd": subtotal,
         "contingency_pct": CONTINGENCY_PCT,
         "contingency_usd": contingency,
