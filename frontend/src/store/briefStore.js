@@ -10,17 +10,23 @@ const useBriefStore = create((set, get) => ({
   status: 'idle', // idle | loading | error
   error: null,
   family: 'open_ring',
-  backendUp: null, // null = unknown, true/false after health ping
+  show: [],          // light show segments (scope §14); empty = backend default
+  backendUp: null,   // null = unknown, true/false after health ping
   setFamily: (family) => set({ family }),
   setBrief: (brief) => set({ brief }),
+  setShow: (show) => set({ show }),
   setBackendUp: (backendUp) => set({ backendUp }),
 
   // Shared: run the deterministic engineering loop on a brief.
   _runEngineering: async (brief) => {
+    const { show } = get()
+    const finalBrief = show.length
+      ? { ...brief, lighting: { ...(brief.lighting || {}), show } }
+      : brief
     const engResp = await fetch(`${API_BASE_URL}/api/engineering/run`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(brief),
+      body: JSON.stringify(finalBrief),
     })
     if (!engResp.ok) {
       const detail = await engResp.text()

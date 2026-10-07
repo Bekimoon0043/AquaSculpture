@@ -24,6 +24,10 @@ export default function Viewer3D() {
   const [wireframe, setWireframe] = useState(false)
   const [showSkeleton, setShowSkeleton] = useState(false)
   const [showWater, setShowWater] = useState(true)
+  const [night, setNight] = useState(false)
+  const nightRef = useRef(false)
+  nightRef.current = night
+  const sceneLightsRef = useRef(null)
   const showSkeletonRef = useRef(false)
   showSkeletonRef.current = showSkeleton
   const showWaterRef = useRef(true)
@@ -62,7 +66,8 @@ export default function Viewer3D() {
     controlsRef.current = controls
 
     // Studio three-point lighting: key + fill + rim, over a hemisphere base.
-    scene.add(new THREE.HemisphereLight(0xbfd4ff, 0x30343c, 0.9))
+    const hemi = new THREE.HemisphereLight(0xbfd4ff, 0x30343c, 0.9)
+    scene.add(hemi)
     const key = new THREE.DirectionalLight(0xffffff, 2.0)
     key.position.set(5, 10, 6)
     scene.add(key)
@@ -72,6 +77,7 @@ export default function Viewer3D() {
     const rim = new THREE.DirectionalLight(0xffe8c0, 1.2)
     rim.position.set(-3, 6, -8)
     scene.add(rim)
+    sceneLightsRef.current = { hemi, key, fill, rim }
 
     scene.add(new THREE.GridHelper(20, 20, 0x3a3f4a, 0x262a32))
 
@@ -187,6 +193,28 @@ export default function Viewer3D() {
     if (waterRef.current?.group) waterRef.current.group.visible = showWater
   }, [showWater, engineering])
 
+  // Night mode (scope §30): dark sky, dimmed key lights, glowing water.
+  useEffect(() => {
+    const scene = sceneRef.current
+    const lights = sceneLightsRef.current
+    if (!scene || !lights) return
+    scene.background = new THREE.Color(night ? 0x05080f : 0x14161a)
+    scene.fog = new THREE.Fog(night ? 0x05080f : 0x14161a, 20, 60)
+    lights.hemi.intensity = night ? 0.25 : 0.9
+    lights.key.intensity = night ? 0.4 : 2.0
+    lights.fill.intensity = night ? 0.2 : 0.8
+    lights.rim.intensity = night ? 1.8 : 1.2   // rim glow reads at night
+    if (waterRef.current?.group) {
+      waterRef.current.group.traverse((o) => {
+        if (o.material?.opacity !== undefined) {
+          o.material.opacity = night
+            ? Math.min(o.material.opacity * 1.3, 1.0)
+            : o.material.opacity
+        }
+      })
+    }
+  }, [night, engineering])
+
   function setView(preset) {
     const camera = cameraRef.current
     const controls = controlsRef.current
@@ -237,6 +265,13 @@ export default function Viewer3D() {
           title="Show water effects"
         >
           Water
+        </button>
+        <button
+          className={`btn ${night ? 'active' : ''}`}
+          onClick={() => setNight((n) => !n)}
+          title="Night rendering preview"
+        >
+          Night
         </button>
       </div>
       {size && (

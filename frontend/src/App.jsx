@@ -6,6 +6,7 @@ import Viewer3D from './components/Viewer3D'
 import BriefEditor from './components/BriefEditor'
 import EngineeringPanel from './components/EngineeringPanel'
 import CostPanel from './components/CostPanel'
+import TimelinePanel from './components/TimelinePanel'
 import ExportPanel from './components/ExportPanel'
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
           tabs={[
             { label: 'Engineering', node: <EngineeringPanel /> },
             { label: 'Cost', node: <CostPanel /> },
+            { label: 'Show', node: <TimelinePanel /> },
             { label: 'Export', node: <ExportPanel /> },
           ]}
         />
