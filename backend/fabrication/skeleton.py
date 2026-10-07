@@ -90,7 +90,8 @@ def _tube_between(p1, p2, radius: float, sides: int = 10):
 
 
 def generate_skeleton(brief: dict, geo: dict, structural: dict,
-                      shell_vertices=None) -> dict:
+                      shell_vertices=None,
+                      force_section: tuple[int, int] | None = None) -> dict:
     bbox = geo["bounding_box"]
     (x0, y0, z0), (x1, y1, z1) = bbox["min"], bbox["max"]
     height_m = max(y1 - y0, 0.1)
@@ -98,7 +99,11 @@ def generate_skeleton(brief: dict, geo: dict, structural: dict,
 
     moment_knm = structural.get("total_base_moment_knm",
                                 structural.get("overturning_moment_knm", 0.0))
-    section, props = select_shs(moment_knm)
+    if force_section is not None:
+        section = force_section
+        props = shs_properties(*section)
+    else:
+        section, props = select_shs(moment_knm)
     side_m = section[0] / 1000.0
 
     members: list[dict] = []
@@ -131,13 +136,13 @@ def generate_skeleton(brief: dict, geo: dict, structural: dict,
                 "length_m": round(reach, 3)})
         y += RIB_SPACING_M
 
-    # ── Base frame: square ring under the footprint ─────────────────────
+    # ── Base frame: square ring at the base, tied to the spine foot ─────
     fw = (x1 - x0) / 2.0 * RIB_REACH_FRACTION
     fd = (z1 - z0) / 2.0 * RIB_REACH_FRACTION
-    corners = [(cx - fw, z0 + BASE_FRAME_MARGIN_M, cz - fd),
-               (cx + fw, z0 + BASE_FRAME_MARGIN_M, cz - fd),
-               (cx + fw, z0 + BASE_FRAME_MARGIN_M, cz + fd),
-               (cx - fw, z0 + BASE_FRAME_MARGIN_M, cz + fd)]
+    corners = [(cx - fw, y0, cz - fd),
+               (cx + fw, y0, cz - fd),
+               (cx + fw, y0, cz + fd),
+               (cx - fw, y0, cz + fd)]
     for i in range(4):
         p1, p2 = corners[i], corners[(i + 1) % 4]
         length = float(np.linalg.norm(np.subtract(p2, p1)))
@@ -145,6 +150,13 @@ def generate_skeleton(brief: dict, geo: dict, structural: dict,
                         "section": f"SHS {section[0]}x{section[0]}x{section[1]}",
                         "from": list(p1), "to": list(p2),
                         "length_m": round(length, 3)})
+        # Diagonal tie: corner -> spine foot (keeps the frame one mechanism-
+        # free body — required for the FEA model to be determinate-stable).
+        tie_len = float(np.linalg.norm(np.subtract(p1, (cx, y0, cz))))
+        members.append({"kind": "base_tie",
+                        "section": f"SHS {section[0]}x{section[0]}x{section[1]}",
+                        "from": list(p1), "to": [cx, y0, cz],
+                        "length_m": round(tie_len, 3)})
 
     # ── Weights ─────────────────────────────────────────────────────────
     rib_kg_per_m = shs_properties(40, 2)["kg_per_m"]

@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 56%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 58%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -12,7 +12,7 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 3 | Geometry Integrity | 5% | **3** | G2 gate live: open/non-manifold edges, degenerate faces, floating components (union-find), min feature size. Next: self-intersection BVH, curvature limits |
 | 4 | Material Engineering | 4% | **2** | 10 materials with full property set (yield/tensile/E/thermal/corrosion/weldability/finishes). Next: AI material recommendation by environment+loads |
 | 5 | Structural Load Engine | 7% | **3** | Dead + wind (gust, drag, solidity per family) + water jet reaction + seismic base shear. Next: snow/maintenance/thermal loads, site wind input |
-| 6 | Structural/FEA Analysis | 7% | **2** | Deflection, stress, Euler buckling, natural frequency + resonance screen, safety factors (anchored/freestanding). Next: CalculiX FEA integration |
+| 6 | Structural/FEA Analysis | 7% | **3** | In-house 3D frame FEA (direct stiffness, 12-DOF beam elements, validated vs cantilever theory within 2%), auto-section-upsize design loop, FEA safety factors in G4. Next: shell FEA, CalculiX bridge |
 | 7 | Foundation/Anchors | 4% | **3** | Base plate + bolt tension SF + pad with soil bearing check + rebar. Next: pull-out calcs + foundation drawing output |
 | 8 | Hydraulic Engineering | 7% | **4** | Full network: branch pipes + fitting K-losses, manifold, valve sizing, jet trajectory/height, filtration sizing, pump/nozzle/valve/pipe schedules. Next: pressure-dependent balancing, surge transients |
 | 9 | Water Simulation | 4% | **2** | Live viewer water: ballistic jet particles from real exit velocities, water surface, curtain sheets, gravity animation. Next: splash zones, mist, wind drift |

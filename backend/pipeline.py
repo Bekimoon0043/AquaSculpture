@@ -65,6 +65,7 @@ def run_pipeline(brief: dict) -> dict:
     hyd = hydraulics.compute_hydraulics(brief, basin_meta)
     struct = structural.compute_structural(brief, geo, ring["metadata"],
                                            hydraulics=hyd)
+
     # Geometry forensics + design gates (scope §3, §28).
     integ = integrity.validate_mesh(ring["vertices"], ring["faces"])
 
@@ -73,6 +74,52 @@ def run_pipeline(brief: dict) -> dict:
     from fabrication import panelize, skeleton
     skel = skeleton.generate_skeleton(brief, geo, struct,
                                       shell_vertices=ring["vertices"])
+
+    # Mini-FEA on the generated skeleton (scope §6): direct stiffness frame
+    # analysis. If the frame is overstressed or too flexible, upsize the
+    # section and re-run — a real design loop, not a warning sticker.
+    from engineering import fea
+    from fabrication.skeleton import SHS_CATALOG
+    fea_result = None
+    for _attempt in range(4):
+        shs = skel["section"].replace("SHS ", "").split("x")  # "SHS 100x100x5"
+        section = (int(shs[0]), int(shs[2]))
+        try:
+            fea_result = fea.solve_frame(
+                skel["members"], section,
+                lateral_load_n=struct["loads"]["total_horizontal_kn"] * 1000.0,
+                dead_load_n=struct["loads"]["dead_kn"] * 1000.0,
+                load_height_m=geo["bounding_box"]["size"][1] / 2.0)
+        except Exception as e:  # FEA must never break the pipeline
+            fea_result = {"error": str(e)}
+            break
+        h_mm = geo["bounding_box"]["size"][1] * 1000.0
+        fea_result["stress_ok"] = bool(fea_result["max_stress_mpa"] * 1.5 <= 250.0)
+        fea_result["deflection_ok"] = bool(
+            fea_result["max_displacement_mm"] <= h_mm / 100.0)
+        fea_result["passed"] = bool(fea_result["stress_ok"]
+                                    and fea_result["deflection_ok"])
+        fea_result["section"] = skel["section"]
+        if fea_result["passed"]:
+            break
+        idx = SHS_CATALOG.index(section) if section in SHS_CATALOG else -1
+        if idx + 1 >= len(SHS_CATALOG):
+            fea_result["passed"] = False
+            break
+        bigger = SHS_CATALOG[idx + 1]
+        from fabrication import skeleton as _skel_mod
+        skel = _skel_mod.generate_skeleton(brief, geo, struct,
+                                           shell_vertices=ring["vertices"],
+                                           force_section=bigger)
+    struct = {**struct, "fea": fea_result}
+    if fea_result and "error" not in fea_result:
+        sf = dict(struct["safety_factors"])
+        sf["yield_fea"] = round(250.0 / max(fea_result["max_stress_mpa"], 1e-9), 2)
+        sf["deflection_fea"] = round(
+            (geo["bounding_box"]["size"][1] * 1000.0 / 100.0)
+            / max(fea_result["max_displacement_mm"], 1e-9), 2)
+        sf["all_pass"] = bool(sf["all_pass"] and fea_result["passed"])
+        struct["safety_factors"] = sf
 
     # Panelization (scope §16/§18): shell -> manufacturable panels.
     panels = panelize.panelize_shell(ring["vertices"], ring["faces"])
