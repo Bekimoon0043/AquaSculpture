@@ -25,6 +25,9 @@ export default function Viewer3D() {
   const [showSkeleton, setShowSkeleton] = useState(false)
   const [showWater, setShowWater] = useState(true)
   const [night, setNight] = useState(false)
+  const [showLux, setShowLux] = useState(false)
+  const showLuxRef = useRef(false)
+  showLuxRef.current = showLux
   const nightRef = useRef(false)
   nightRef.current = night
   const sceneLightsRef = useRef(null)
@@ -164,6 +167,37 @@ export default function Viewer3D() {
     scene.add(group)
     groupRef.current = group
 
+    // Illumination heat-map overlay (scope §13): shell faces colored by lux.
+    const faceLux = engineering.lighting?.illumination?.face_lux
+    if (faceLux && faceLux.length === engineering.sculpture.mesh.faces.length) {
+      const mesh = engineering.sculpture.mesh
+      const geoL = new THREE.BufferGeometry()
+      geoL.setAttribute('position',
+        new THREE.Float32BufferAttribute(mesh.vertices.flat(), 3))
+      geoL.setIndex(mesh.faces.flat())
+      // Average face lux onto vertices, map to a blue->red ramp.
+      const vLux = new Float32Array(mesh.vertices.length)
+      const vCnt = new Float32Array(mesh.vertices.length)
+      mesh.faces.forEach((f, i) => {
+        for (const vi of f) { vLux[vi] += faceLux[i]; vCnt[vi] += 1 }
+      })
+      const colors = new Float32Array(mesh.vertices.length * 3)
+      const maxLux = Math.max(...faceLux, 1)
+      for (let vi = 0; vi < mesh.vertices.length; vi++) {
+        const t = Math.min(vLux[vi] / (vCnt[vi] || 1) / (maxLux * 0.8), 1)
+        const c = new THREE.Color().setHSL(0.63 * (1 - t), 0.9, 0.5)
+        colors.set([c.r, c.g, c.b], vi * 3)
+      }
+      geoL.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+      const luxMesh = new THREE.Mesh(geoL, new THREE.MeshBasicMaterial({
+        vertexColors: true, transparent: true, opacity: 0.85,
+      }))
+      luxMesh.name = 'luxmap'
+      luxMesh.position.y = engineering.sculpture_offset_m + 0.005
+      luxMesh.visible = showLuxRef.current
+      group.add(luxMesh)
+    }
+
     // Water effects (scope §10) — AquaFlow-derived stack: tapered core
     // columns, breakup droplets, apex mist, impact foam, Gerstner surface.
     const viz = engineering.water_viz
@@ -192,6 +226,12 @@ export default function Viewer3D() {
   useEffect(() => {
     if (waterRef.current?.group) waterRef.current.group.visible = showWater
   }, [showWater, engineering])
+
+  // Lux heat-map visibility.
+  useEffect(() => {
+    const lm = groupRef.current?.getObjectByName('luxmap')
+    if (lm) lm.visible = showLux
+  }, [showLux, engineering])
 
   // Night mode (scope §30): dark sky, dimmed key lights, glowing water.
   useEffect(() => {
@@ -272,6 +312,14 @@ export default function Viewer3D() {
           title="Night rendering preview"
         >
           Night
+        </button>
+        <button
+          className={`btn ${showLux ? 'active' : ''}`}
+          onClick={() => setShowLux((l) => !l)}
+          disabled={!engineering?.lighting?.illumination?.face_lux}
+          title="Illumination heat map (lux on shell)"
+        >
+          Lux
         </button>
       </div>
       {size && (

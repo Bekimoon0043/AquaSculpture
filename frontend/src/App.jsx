@@ -7,6 +7,7 @@ import BriefEditor from './components/BriefEditor'
 import EngineeringPanel from './components/EngineeringPanel'
 import CostPanel from './components/CostPanel'
 import TimelinePanel from './components/TimelinePanel'
+import CopilotPanel from './components/CopilotPanel'
 import ExportPanel from './components/ExportPanel'
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
           tabs={[
             { label: 'Prompt', node: <PromptConsole /> },
             { label: 'Brief', node: <BriefEditor /> },
+            { label: 'Copilot', node: <CopilotPanel /> },
           ]}
         />
         <div className="viewport">

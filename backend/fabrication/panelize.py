@@ -45,7 +45,7 @@ def _convex_hull_2d(points: np.ndarray) -> np.ndarray:
     return np.asarray(lower[:-1] + upper[:-1])
 
 
-def panelize_shell(vertices, faces) -> dict:
+def panelize_shell(vertices, faces, shell_thickness_m: float = 0.003) -> dict:
     v = np.asarray(vertices, dtype=float)
     f = np.asarray(faces, dtype=int)
 
@@ -134,10 +134,28 @@ def panelize_shell(vertices, faces) -> dict:
     dc_share = (sum(1 for p in panels if p["curvature"] == "double_curved")
                 / max(len(panels), 1))
 
+    # Welding engineering (scope §19): butt seams, size from plate
+    # thickness, multi-pass count, electrode consumption.
+    t_mm = shell_thickness_m * 1000.0
+    weld_size_mm = round(max(t_mm, 3.0), 1)
+    passes = max(1, math.ceil(weld_size_mm / 3.0))
+    seam_total = round(total_weld_m, 2)
+    welding = {
+        "weld_type": "butt, full penetration, ground flush",
+        "weld_size_mm": weld_size_mm,
+        "passes": passes,
+        "total_length_m": seam_total,
+        "electrode_kg": round(seam_total * weld_size_mm * 0.55 * passes, 1),
+        "sequence": "tack at 300 mm centres -> root -> fill -> cap; "
+                    "alternate sides to balance distortion",
+        "post_weld": "grind flush -> passivate (stainless) / patina (bronze)",
+    }
+
     return {
         "panel_count": len(panels),
         "panels": panels,
-        "total_weld_seam_m": round(total_weld_m, 2),
+        "total_weld_seam_m": seam_total,
+        "welding": welding,
         "double_curved_share": round(dc_share, 3),
         "oversized_panels": oversized,
         "sheet_max_m": list(SHEET_MAX_M),

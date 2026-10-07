@@ -45,3 +45,10 @@ def test_all_archetypes_pass_integrity():
         mesh = _mesh(family, {}, "stainless_316l", 3.0)
         r = integrity.validate_mesh(mesh["vertices"], mesh["faces"])
         assert r["passed"] is True, f"{family}: {r['errors']}"
+
+
+def test_fold_angle_reported():
+    mesh = _mesh("open_ring", {"diameter_m": 4.0, "tube_radius_m": 0.15,
+                               "opening_deg": 90, "segments": 16})
+    r = integrity.validate_mesh(mesh["vertices"], mesh["faces"])
+    assert 0 < r["worst_fold_deg"] < 150  # smooth ring, no brutal folds

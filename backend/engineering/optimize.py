@@ -33,7 +33,36 @@ def _variant_brief(brief: dict, scale: float, shave: float) -> dict:
     return b
 
 
+def _pareto(brief: dict, run_pipeline) -> dict:
+    """Multi-objective: cost vs weight — the non-dominated front."""
+    points = []
+    for scale in SCALE_GRID:
+        for shave in SECTION_SHAVES:
+            vb = _variant_brief(brief, scale, shave)
+            try:
+                r = run_pipeline(vb)
+            except Exception:
+                continue
+            if r["gates"]["hard_fail"] or r["cost"]["over_budget"]:
+                continue
+            points.append({
+                "scale": scale, "section_shave": shave,
+                "cost": r["cost"]["total_usd"],
+                "weight": round(r["sculpture"]["metadata"]["mass_kg"]
+                                + r["skeleton"]["total_steel_kg"], 1),
+            })
+    front = [p for p in points
+             if not any(q["cost"] <= p["cost"] and q["weight"] <= p["weight"]
+                        and (q["cost"] < p["cost"] or q["weight"] < p["weight"])
+                        for q in points)]
+    front.sort(key=lambda p: p["cost"])
+    return {"goal": "pareto", "objectives": ["cost", "weight"],
+            "front": front, "candidates": len(points)}
+
+
 def optimize(brief: dict, goal: str, run_pipeline) -> dict:
+    if goal == "pareto":
+        return _pareto(brief, run_pipeline)
     if goal not in GOAL_METRIC:
         raise ValueError(f"unknown goal '{goal}'; choose from {sorted(GOAL_METRIC)}")
 

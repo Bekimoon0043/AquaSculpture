@@ -17,9 +17,12 @@ fabrication plan must then show the hidden supports (scope §3 hard rule is
 about *fabrication connectivity*, not visual overlap).
 """
 
+import math
+
 import numpy as np
 
 MIN_FEATURE_M = 0.002  # 2 mm — below this, geometry is un-fabricatable
+MAX_FOLD_DEG = 150.0   # dihedral angle beyond which panels can't be formed
 
 
 def validate_mesh(vertices, faces) -> dict:
@@ -77,6 +80,27 @@ def validate_mesh(vertices, faces) -> dict:
         warnings.append(f"smallest edge {min_edge * 1000:.2f} mm is below the "
                         f"{MIN_FEATURE_M * 1000:.0f} mm fabrication floor")
 
+    # ── Fold severity (scope §3: excessively tight curvature) ───────────
+    # Dihedral angle across shared edges; beyond MAX_FOLD_DEG the shell
+    # cannot be brake-pressed or rolled and needs re-design.
+    tris = v[f]
+    fnorms = np.cross(tris[:, 1] - tris[:, 0], tris[:, 2] - tris[:, 0])
+    fnorms /= np.linalg.norm(fnorms, axis=1, keepdims=True).clip(1e-15)
+    edge_faces2: dict[tuple[int, int], list[int]] = {}
+    for fi, (a, b, c) in enumerate(f):
+        for e in ((a, b), (b, c), (c, a)):
+            edge_faces2.setdefault((min(e), max(e)), []).append(fi)
+    worst_fold = 0.0
+    for owners in edge_faces2.values():
+        if len(owners) == 2:
+            dot = float(np.clip(fnorms[owners[0]] @ fnorms[owners[1]],
+                                -1.0, 1.0))
+            fold = math.degrees(math.acos(abs(dot)))
+            worst_fold = max(worst_fold, fold)
+    if worst_fold > MAX_FOLD_DEG:
+        errors.append(f"fold angle {worst_fold:.0f} deg exceeds formable "
+                      f"limit ({MAX_FOLD_DEG:.0f} deg)")
+
     return {
         "watertight": open_edges == 0,
         "open_edges": open_edges,
@@ -84,6 +108,7 @@ def validate_mesh(vertices, faces) -> dict:
         "degenerate_faces": degenerate,
         "components": components,
         "min_edge_m": round(min_edge, 5),
+        "worst_fold_deg": round(worst_fold, 1),
         "self_intersection": "not_checked",  # needs BVH pair engine (later)
         "errors": errors,
         "warnings": warnings,

@@ -45,6 +45,20 @@ def generate_method_statement(result: dict) -> dict:
     routing = result.get("routing") or {}
     cost = result.get("cost") or {}
 
+    # Learning loop (scope §32): if actuals exist, recalibrate crew-days.
+    calibration = 1.0
+    try:
+        from learning import store
+        rows = [r for r in store.history()
+                if (r.get("delta_analysis") or {}).get("crew_days")]
+        if len(rows) >= 2:
+            factors = [r["delta_analysis"]["crew_days"]["actual"]
+                       / r["delta_analysis"]["crew_days"]["predicted"]
+                       for r in rows]
+            calibration = sum(factors) / len(factors)
+    except Exception:
+        pass  # learning is advisory, never blocking
+
     concrete = struct.get("foundation", {}).get("concrete_m3", 0.0)
     members = skel.get("member_count", 0)
     n_panels = panels.get("panel_count", 0)
@@ -84,10 +98,14 @@ def generate_method_statement(result: dict) -> dict:
     }
 
     steps = [{"order": i + 1, "key": key, "task": task,
-              "quantity": qty[key], "crew_days": days[key]}
+              "quantity": qty[key],
+              "crew_days": round(days[key] * calibration, 1)}
              for i, (key, task) in enumerate(STEPS)]
     return {
         "steps": steps,
-        "total_crew_days": round(sum(d for d in days.values()), 1),
-        "note": "Method statement v1 — crew-day rates are editable heuristics",
+        "total_crew_days": round(sum(s["crew_days"] for s in steps), 1),
+        "calibration_factor": round(calibration, 3),
+        "note": ("Method statement v1 — crew-day rates are editable heuristics"
+                 + ("" if calibration == 1.0
+                    else f"; recalibrated x{calibration:.2f} from actuals")),
     }

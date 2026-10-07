@@ -49,3 +49,14 @@ def test_optimize_endpoint():
     body = resp.json()
     assert body["goal"] == "pump_power"
     assert body["best"]["gates_pass"] is True
+
+
+def test_pareto_front():
+    from engineering.optimize import optimize as opt
+    out = opt(_brief(), "pareto", run_pipeline)
+    assert out["front"]
+    # Non-dominated: sorted by cost, weight must strictly decrease... no —
+    # along the front, cheaper means heavier or equal is impossible; weight
+    # must strictly decrease as cost increases.
+    for a, b in zip(out["front"], out["front"][1:]):
+        assert b["weight"] < a["weight"]

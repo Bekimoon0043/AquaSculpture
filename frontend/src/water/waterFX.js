@@ -238,6 +238,23 @@ export function buildWaterFX(viz) {
     })
     group.add(foam)
     updatables.push((t) => foam.userData.update(t))
+
+    // Splash-zone ring (engineering output made visible).
+    if (j.splash_radius_m) {
+      const pts = []
+      for (let i = 0; i <= 48; i++) {
+        const a = (i / 48) * Math.PI * 2
+        pts.push(new THREE.Vector3(
+          j.position[0] + Math.cos(a) * j.splash_radius_m,
+          viz.water_level_m + 0.01,
+          j.position[2] + Math.sin(a) * j.splash_radius_m))
+      }
+      const ring = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(pts),
+        new THREE.LineBasicMaterial({ color: 0x4fa8ff, transparent: true,
+                                      opacity: 0.5 }))
+      group.add(ring)
+    }
   }
 
   // Curtain sheets (unchanged translucent bands).

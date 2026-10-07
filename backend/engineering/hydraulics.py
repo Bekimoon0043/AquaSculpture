@@ -113,13 +113,16 @@ def compute_hydraulics(brief: dict, basin_meta: dict | None = None) -> dict:
             flow_lps = count * nozzle["k_lps_per_sqrt_bar"] * math.sqrt(pressure)
             head = pressure * BAR_TO_M_HEAD
             exit_v = VELOCITY_COEFF * math.sqrt(2.0 * GRAVITY * head)
+            jet_h = exit_v**2 / (2 * GRAVITY) * JET_AIR_LOSS
             per_feature.append({
                 "type": ftype, "count": count, "nozzle": nozzle_key,
                 "pressure_bar": pressure, "flow_lps": flow_lps,
                 "static_lift_m": 0.5,
                 "pressure_head_m": head,
                 "exit_velocity_ms": round(exit_v, 2),
-                "jet_height_m": round(exit_v**2 / (2 * GRAVITY) * JET_AIR_LOSS, 2),
+                "jet_height_m": round(jet_h, 2),
+                # Splash zone (scope §10): radius grows with jet height.
+                "splash_radius_m": round(0.35 + 0.25 * jet_h, 2),
             })
         elif ftype in WEIR_FEATURES:
             length = feat.get("spill_edge_length_m", DEFAULT_SPILL_EDGE_M)

@@ -67,6 +67,11 @@ def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
                                  rates["cnc_cutting_cost_per_m"]))
         shell_items.append(_item(f"Welding ({panels['panel_count']} panels)",
                                  seam_m, "m", rates["welding_cost_per_m"]))
+        weld = panels.get("welding") or {}
+        if weld.get("electrode_kg"):
+            shell_items.append(_item(
+                f"Welding consumables ({weld['weld_size_mm']} mm, "
+                f"{weld['passes']} pass)", weld["electrode_kg"], "kg", 18.0))
     sections.append({"key": "shell", "label": "SCULPTURE SHELL", "items": shell_items})
 
     # ARMATURE (generated skeleton when available, then structural calc,

@@ -65,3 +65,30 @@ def test_copilot_rejects_silly_factor():
     resp = client.post("/api/copilot/scale",
                        json={"brief": _brief(), "factor": 20.0})
     assert resp.status_code == 422
+
+
+def test_concepts_endpoint():
+    resp = client.post("/api/concepts", json={"brief": _brief(), "count": 3})
+    assert resp.status_code == 200
+    out = resp.json()
+    assert len(out["concepts"]) == 3
+    families = {c["brief"]["sculpture"]["family"] for c in out["concepts"]}
+    assert len(families) == 3  # controlled variety, not random
+    for c in out["concepts"]:
+        assert c["headline"]["mass_kg"] > 0
+        assert "gates_pass" in c["headline"]
+
+
+def test_welding_engineering_block():
+    from fabrication import panelize
+    from geometry.archetypes import generate
+    mesh = generate("open_ring", {"diameter_m": 4.0, "tube_radius_m": 0.15,
+                                  "opening_deg": 90, "segments": 12},
+                    "stainless_316l", 4.0)
+    p = panelize.panelize_shell(mesh["vertices"], mesh["faces"],
+                                shell_thickness_m=0.003)
+    w = p["welding"]
+    assert w["weld_size_mm"] >= 3.0
+    assert w["passes"] >= 1
+    assert w["electrode_kg"] > 0
+    assert w["total_length_m"] == p["total_weld_seam_m"]

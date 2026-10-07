@@ -92,3 +92,11 @@ def test_g6_gate_live():
                              lighting=light)
     g6 = {x["id"]: x for x in g["gates"]}["G6"]
     assert g6["status"] in ("pass", "warning")
+
+
+def test_face_lux_heatmap_present():
+    mesh, geo = _ring()
+    fixtures = lighting.place_fixtures(BRIEF, geo, BASIN_META)
+    illum = lighting.illuminate(fixtures, mesh["vertices"], mesh["faces"])
+    assert len(illum["face_lux"]) == len(mesh["faces"])
+    assert max(illum["face_lux"]) == pytest.approx(illum["max_lux"], abs=0.2)

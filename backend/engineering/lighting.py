@@ -112,6 +112,7 @@ def illuminate(fixtures: list[dict], vertices, faces) -> dict:
         "coverage_pct": round(float((lux >= MIN_LUX).mean()) * 100.0, 1),
         "min_lux_target": MIN_LUX,
         "wasted_fixtures": wasted,
+        "face_lux": [round(float(x), 1) for x in lux],  # heat-map overlay
         "hotspots": [],  # per-fixture glare analysis later
     }
 

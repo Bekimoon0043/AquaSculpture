@@ -122,7 +122,9 @@ def run_pipeline(brief: dict) -> dict:
         struct["safety_factors"] = sf
 
     # Panelization (scope §16/§18): shell -> manufacturable panels.
-    panels = panelize.panelize_shell(ring["vertices"], ring["faces"])
+    panels = panelize.panelize_shell(ring["vertices"], ring["faces"],
+                                     shell_thickness_m=ring["metadata"]
+                                     ["shell_thickness_m"])
 
     # Lighting engineering (scope §11/§12/§15).
     from engineering import lighting
@@ -175,9 +177,10 @@ def run_pipeline(brief: dict) -> dict:
         if jet_feats and basin_meta.get("nozzle_positions"):
             v0 = jet_feats[0]["exit_velocity_ms"]
             h = jet_feats[0]["jet_height_m"]
+            sr = jet_feats[0].get("splash_radius_m")
             for pos in basin_meta["nozzle_positions"]:
                 jets.append({"position": pos, "exit_velocity_ms": v0,
-                             "jet_height_m": h})
+                             "jet_height_m": h, "splash_radius_m": sr})
         bbox = geo["bounding_box"]["size"]
         curtains = [{"radius_m": round(max(bbox[0], bbox[2]) / 2 * 0.9, 3),
                      "top_y": round(bbox[1] * 0.9 + sculpture_offset_m, 3),

@@ -69,3 +69,9 @@ def test_still_basin_no_network():
     assert r["manifold"] is None
     assert r["filtration"] is None
     assert r["schedules"]["pump"] is None
+
+
+def test_splash_zone_grows_with_jet_height():
+    r = hydraulics.compute_hydraulics(BRIEF, BASIN_META)
+    bubbler = next(f for f in r["features"] if f["type"] == "bubbler_field")
+    assert bubbler["splash_radius_m"] > 0.35
