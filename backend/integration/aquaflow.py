@@ -173,5 +173,7 @@ def build_luxexchange(result: dict) -> dict:
             },
             "gltf": _gltf_document(mesh["vertices"], mesh["faces"]),
             "fixtures": fixtures,
+            # Authored light-show program for AquaFlow to play (scope §14/§31).
+            "show_program": (result.get("light_show") or {}).get("program"),
         },
     }

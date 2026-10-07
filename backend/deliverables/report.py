@@ -204,6 +204,24 @@ def engineering_report_pages(brief: dict, sculpture_meta: dict, geo: dict,
         ])
 
     pages.append(cost_page)
+
+    # Quotation (scope §24): production cost AND client-facing quotation.
+    pages.append([
+        ("Quotation", 16),
+        (f"Project: {project.get('name', '-')}", 12),
+        ("", 6),
+        (f"Estimated production cost: USD {cost['subtotal_usd']:,.0f} "
+         f"(+{cost['contingency_pct']:.0f}% contingency)", 11),
+        (f"Recommended quotation: USD {cost['total_usd']:,.0f} "
+         f"(incl. {cost['margin_pct']:.0f}% margin)", 13),
+        ("", 6),
+        ("Terms: 40% deposit on approval, 40% on fabrication completion, "
+         "20% on commissioning. Validity: 30 days.", 10),
+        ("Exclusions: site civil works beyond the foundation pad, utility "
+         "supply to the plant room, permits, taxes.", 10),
+        ("Engineering values are preliminary and require licensed engineer "
+         "review before construction.", 10),
+    ])
     if lighting:
         illum = lighting["illumination"]
         ctrl = lighting["controls"]

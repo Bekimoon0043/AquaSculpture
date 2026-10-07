@@ -92,6 +92,14 @@ def run_pipeline(brief: dict) -> dict:
     route = routing.design_routing(brief, geo, hyd, skel, light)
     maint = maintainability.analyze_maintainability(brief, basin_meta, hyd,
                                                     light, route)
+
+    # Dynamic light show timeline (scope §14) — authored here, played by
+    # AquaFlow via the LUXEXCHANGE envelope (§31).
+    from engineering import light_timeline
+    try:
+        show = light_timeline.compile_show(brief, light)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
     gate_result = gates.evaluate_gates(brief, integ, struct, hyd, cost,
                                        panels=panels, lighting=light,
                                        routing=route, maintainability=maint)
@@ -144,6 +152,7 @@ def run_pipeline(brief: dict) -> dict:
         "panelization": {k: v for k, v in panels.items() if k != "panels"},
         "panels": panels["panels"],
         "lighting": light,
+        "light_show": show,
         "routing": route,
         "maintainability": maint,
         "water_viz": water_viz,
