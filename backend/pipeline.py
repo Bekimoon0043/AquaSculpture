@@ -129,9 +129,17 @@ def run_pipeline(brief: dict) -> dict:
     light = lighting.design_lighting(brief, geo, ring["vertices"], ring["faces"],
                                      basin_meta)
 
+    # Kinetic drive engineering (scope §16) when the brief asks for motion.
+    from engineering import kinetics
+    kin = None
+    if brief.get("kinetics"):
+        kin = kinetics.design_kinetics(brief, geo, ring["vertices"],
+                                       ring["faces"], ring["metadata"]["mass_kg"]
+                                       + skel["total_steel_kg"])
+
     cost = estimator.estimate(brief, ring["metadata"], basin_meta, hyd,
                               structural=struct, skeleton=skel, panels=panels,
-                              lighting=light)
+                              lighting=light, kinetics=kin)
 
     # Internal services routing (scope §18/§20) + maintainability (§21).
     from engineering import maintainability
@@ -202,6 +210,7 @@ def run_pipeline(brief: dict) -> dict:
         "light_show": show,
         "routing": route,
         "maintainability": maint,
+        "kinetics": kin,
         "water_viz": water_viz,
         "gates": gate_result,
         "cost": cost,

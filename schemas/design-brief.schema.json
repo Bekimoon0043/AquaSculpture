@@ -153,6 +153,19 @@
         "max_height_m": { "type": "number", "exclusiveMinimum": 0 },
         "notes": { "type": "string" }
       }
+    },
+    "kinetics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["motion"],
+      "properties": {
+        "motion": { "type": "string",
+                    "enum": ["rotation", "oscillation"] },
+        "axis": { "type": "string", "enum": ["y", "x", "z"] },
+        "rpm": { "type": "number", "exclusiveMinimum": 0 },
+        "amplitude_deg": { "type": "number", "exclusiveMinimum": 0 },
+        "ramp_time_s": { "type": "number", "exclusiveMinimum": 0 }
+      }
     }
   }
 }

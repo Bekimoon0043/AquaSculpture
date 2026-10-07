@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 58%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 59%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -20,7 +20,7 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 11 | Lighting Engineering | 5% | **3** | Placement engine (uplight ring + submersible), full fixture specs, PSU/DMX/cable/voltage-drop engineering, fixture schedule, G6 gate live. Next: wider fixture catalog, zoning |
 | 12 | Lighting Simulation | 3% | **2** | Point-source lux over shell faces: avg/max/coverage + wasted-fixture detection. Next: heat-map visualization, glare/reflection |
 | 13 | Dynamic Lighting | 3% | **2** | Timeline engine: 8 effects, zone targeting, per-fixture keyframe program, ships in LUXEXCHANGE for AquaFlow. Next: timeline editor UI, music sync via AquaFlow |
-| 14 | Kinetic Engineering | 3% | **0** | — Later phase per scope |
+| 14 | Kinetic Engineering | 3% | **2** | Rotation/oscillation: mesh-derived inertia, torque, motor+gearbox selection, shaft sizing, bearing L10 life, motion envelope. In BOM. Next: collision envelopes vs surroundings, dynamic stress via FEA |
 | 15 | Structural Skeleton Generator | 5% | **3** | Spine + shell-reaching ribs + base frame; SHS auto-selected from base moment (Z_req); viewer x-ray mode; BOM uses real member weight. Next: diagrid/bracing, multiple spine layouts |
 | 16 | Panelization | 4% | **3** | Shell auto-panelized (sector×band), flat patterns via PCA+hull, curvature classification, stock-sheet check, G7 gate live. Next: developable-surface unrolling for double-curved panels |
 | 17 | Welding Engineering | 3% | **2** | Weld seam map + total length from panelization, costed in BOM. Next: weld types/sizes, sequence, distortion |

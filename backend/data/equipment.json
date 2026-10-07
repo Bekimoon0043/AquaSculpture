@@ -23,5 +23,9 @@
   "valve_ball_usd": 45.0,
   "valve_butterfly_usd": 120.0,
   "manifold_lot_usd": 400.0,
-  "sand_filter_per_m2_usd": 1800.0
+  "sand_filter_per_m2_usd": 1800.0,
+  "motor_per_kw_usd": 350.0,
+  "gearbox_usd": 900.0,
+  "drive_shaft_usd": 450.0,
+  "bearing_pair_usd": 320.0
 }

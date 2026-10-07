@@ -33,7 +33,7 @@ def _item(label: str, qty: float, unit: str, unit_price: float) -> dict:
 def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
              hydraulics: dict, structural: dict | None = None,
              skeleton: dict | None = None, panels: dict | None = None,
-             lighting: dict | None = None) -> dict:
+             lighting: dict | None = None, kinetics: dict | None = None) -> dict:
     materials = _load("materials.json")
     basin_materials = _load("basin_materials.json")
     equipment = _load("equipment.json")
@@ -167,6 +167,17 @@ def estimate(brief: dict, sculpture_meta: dict, basin_meta: dict | None,
         mech_items.append(_item(f"Sand filter {filt['filter_area_m2']} m2",
                                 filt["filter_area_m2"], "m2",
                                 equipment["sand_filter_per_m2_usd"]))
+    # Kinetic drive (scope §16).
+    if kinetics:
+        mech_items.append(_item(f"Motor {kinetics['motor_kw']} kW",
+                                kinetics["motor_kw"], "kW",
+                                equipment["motor_per_kw_usd"]))
+        mech_items.append(_item(f"Gearbox ratio {kinetics['gearbox_ratio']}:1",
+                                1, "ea", equipment["gearbox_usd"]))
+        mech_items.append(_item(f"Drive shaft {kinetics['shaft_diameter_mm']:.0f} mm",
+                                1, "ea", equipment["drive_shaft_usd"]))
+        mech_items.append(_item("Bearing pair (L10-rated)", 1, "lot",
+                                equipment["bearing_pair_usd"]))
     sections.append({"key": "mechanical", "label": "MECHANICAL", "items": mech_items})
 
     # ELECTRICAL (engineered lighting schedule when available, else counts)
