@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 59%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 60%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -32,7 +32,7 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 23 | Engineering AI Copilot | 4% | **2** | Deterministic consequence engine live: /api/copilot/scale diffs mass/overturning/deflection/cost/pump across scales with gate verdicts. Next: LLM natural-language wrapper (needs API credits) |
 | 24 | Multi-Agent Review | 2% | **0** | — Next: reviewer roles after copilot matures |
 | 25 | Optimization | 2% | **3** | /api/optimize: scale x section grid search, 4 goals (cost/weight/pump/weld), gate-failing candidates rejected never ranked; live 18.7% cost saving found. Next: continuous solver, multi-objective Pareto |
-| 26 | CAD/Manufacturing Export | 4% | **3** | STL + GLB + flat-pattern DXF cutting sheets in ZIP package. Next: GA drawings, STEP/IGES |
+| 26 | CAD/Manufacturing Export | 4% | **4** | STL + GLB + DXF cutting sheets + STEP AP214 faceted BREP in ZIP. Next: GA drawings, IGES, STEP import QA in CAD kernel |
 | 27 | Engineering Documentation | 3% | **2** | PDF report + XLSX BOM + ZIP manifest. Next: dedicated structural/hydraulic/foundation reports, GA drawings |
 | 28 | Visualization | 2% | **3** | Viewport + studio lighting + water animation + skeleton x-ray + finish-accurate materials. Next: night mode, site photos |
 | 29 | AquaFlow Integration | 2% | **3** | LUXEXCHANGE v1 export live: nozzles+flows, lights+DMX patch, pump/valves, embedded glTF, /api/integration/aquaflow. Next: AquaFlow-side import test, show-program return path |
