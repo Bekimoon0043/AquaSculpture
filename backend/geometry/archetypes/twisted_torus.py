@@ -19,6 +19,7 @@ def generate_twisted_torus(
     twist_count: int = 2,
     tilt_deg: float = 0.0,
     morph: float = 0.0,
+    aspect_xy: float = 1.0,
     segments: int = 96,
     tube_segments: int = 16,
     shell_thickness_m: float | None = None,
@@ -72,6 +73,10 @@ def generate_twisted_torus(
                           i * tube_segments + j1])
 
     vertices = np.asarray(vertices, dtype=float)
+    if aspect_xy != 1.0:
+        if aspect_xy <= 0:
+            raise ValueError("aspect_xy must be positive")
+        vertices[:, 0] *= aspect_xy  # elliptical loop: narrower than tall
     if tilt_deg:
         tilt = math.radians(tilt_deg)
         rot = np.array([
@@ -94,6 +99,7 @@ def generate_twisted_torus(
                         "twist_count": twist_count,
                         "tilt_deg": tilt_deg,
                         "morph": morph,
+                        "aspect_xy": aspect_xy,
                         "section_area_m2": area,
                         "volume_m3": volume,
                     })
