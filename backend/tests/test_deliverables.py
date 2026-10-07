@@ -95,3 +95,18 @@ def test_package_zip_manifest_hashes():
         assert hashlib.sha256(zf.read(name)).hexdigest() == digest
     assert zf.read("sculpture.glb")[:4] == b"glTF"
     assert zf.read("report.pdf").startswith(b"%PDF-")
+
+
+def test_ga_drawing():
+    from deliverables import drawings
+    from geometry.archetypes import generate
+    mesh = generate("open_ring", {"diameter_m": 2.0, "tube_radius_m": 0.1,
+                                  "opening_deg": 90, "segments": 8},
+                    "stainless_316l", 2.0)
+    text = drawings.build_ga_drawing(
+        {"vertices": mesh["vertices"], "faces": mesh["faces"]}, None,
+        title="Test GA")
+    assert text.startswith("0\nSECTION")
+    assert text.rstrip().endswith("EOF")
+    assert text.count("PLAN") == 1 and "FRONT" in text and "SIDE" in text
+    assert text.count("\nLINE") > 10  # silhouette edges present
