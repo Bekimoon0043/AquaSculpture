@@ -4,8 +4,8 @@ export const FAMILIES = {
     defaults: { diameter_m: 4.0, tube_radius_m: 0.15, opening_deg: 90, segments: 48 },
   },
   twisted_torus: {
-    label: 'Twisted Torus (Seed)',
-    defaults: { major_radius_m: 1.6, section_width_m: 0.4, section_depth_m: 0.25, twist_count: 2, morph: 0.4 },
+    label: 'Twisted Torus (Organic Void)',
+    defaults: { major_radius_m: 1.9, section_width_m: 0.45, section_depth_m: 0.28, twist_count: 2, morph: 0.55, aspect_xy: 0.61 },
   },
   ribbon_knot: {
     label: 'Ribbon Knot / Flame',

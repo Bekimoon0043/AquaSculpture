@@ -3,7 +3,7 @@
 Scored against `LUXURYFORM_SCOPE.md` §Scorecard (0 = nonexistent … 5 = production-grade).
 Updated: initial build (Phases 0–2 + first figurative archetype).
 
-**Overall weighted score: ≈ 52%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
+**Overall weighted score: ≈ 54%** (target: 80%+ AND all safety-critical gates ≥ 4/5)
 
 | # | System | Weight | Score | Where we stand / next step |
 |---|--------|--------|-------|----------------------------|
@@ -26,10 +26,10 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 17 | Welding Engineering | 3% | **2** | Weld seam map + total length from panelization, costed in BOM. Next: weld types/sizes, sequence, distortion |
 | 18 | Internal Service Routing | 3% | **2** | Water risers + power/DMX follow spine with enforced separation, bend-radius check, IP68 penetration schedule, drainage + hatch layout. Next: route geometry in 3D viewer |
 | 19 | Maintainability | 2% | **3** | 8-class serviceability analysis (pump/nozzle/lighting/valve/drain/internal/cleaning/corrosion), G8 gate live, deep-basin nozzle flag works. Next: time/stock-based service schedules |
-| 20 | Fabrication Sequencing | 2% | **0** | — Next: method-statement generator |
+| 20 | Fabrication Sequencing | 2% | **2** | 12-step method statement with real quantities + crew-day estimates, in pipeline output. Next: report page, resource leveling |
 | 21 | BOM | 3% | **3** | Itemized XLSX BOM auto-generated from geometry. Next: category expansion (control/mechanical), BOQ format |
 | 22 | Cost/Quotation | 3% | **3** | Full cost tree, contingency/margin, budget check, opex. Next: quotation document, regional price books |
-| 23 | Engineering AI Copilot | 4% | **1** | Brief-level interpretation works. Next: consequence evaluation ("20% taller → +42% overturning…") |
+| 23 | Engineering AI Copilot | 4% | **2** | Deterministic consequence engine live: /api/copilot/scale diffs mass/overturning/deflection/cost/pump across scales with gate verdicts. Next: LLM natural-language wrapper (needs API credits) |
 | 24 | Multi-Agent Review | 2% | **0** | — Next: reviewer roles after copilot matures |
 | 25 | Optimization | 2% | **0** | — Next: goal-driven parameter search |
 | 26 | CAD/Manufacturing Export | 4% | **3** | STL + GLB + flat-pattern DXF cutting sheets in ZIP package. Next: GA drawings, STEP/IGES |

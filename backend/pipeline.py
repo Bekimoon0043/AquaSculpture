@@ -131,7 +131,7 @@ def run_pipeline(brief: dict) -> dict:
             "curtains": curtains,
         }
 
-    return {
+    result = {
         "brief": brief,
         "sculpture": {"mesh": {"vertices": ring["vertices"], "faces": ring["faces"]},
                       "metadata": ring["metadata"]},
@@ -151,3 +151,8 @@ def run_pipeline(brief: dict) -> dict:
         "cost": cost,
         "sculpture_offset_m": sculpture_offset_m,
     }
+
+    # Fabrication method statement (scope §22) — ordered build sequence.
+    from fabrication import sequencing
+    result["method_statement"] = sequencing.generate_method_statement(result)
+    return result
