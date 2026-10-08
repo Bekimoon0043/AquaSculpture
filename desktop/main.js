@@ -1,27 +1,50 @@
-// SculptFlow Studio — Electron shell (Phase 0).
-// Dev: loads the Vite dev server. Packaged: loads the built frontend.
+// LuxuryForm Studio — Electron shell.
+// Spawns the Python backend (single-process mode: it serves the UI on :8100),
+// then loads the app in a native window. Kills the backend on exit.
 const { app, BrowserWindow } = require('electron')
+const { spawn } = require('child_process')
 const path = require('path')
 
-const DEV_URL = 'http://localhost:5173'
-const isDev = !app.isPackaged
+const APP_URL = 'http://localhost:8100'
+let backend = null
+
+function startBackend() {
+  const backendDir = path.join(__dirname, '..', 'backend')
+  backend = spawn('python', ['main.py'], { cwd: backendDir })
+  backend.on('error', (err) => console.error('backend failed to start:', err))
+}
+
+function waitForBackend(retries = 60) {
+  return new Promise((resolve, reject) => {
+    const attempt = (n) => {
+      fetch(`${APP_URL}/api/health`)
+        .then((r) => (r.ok ? resolve() : attempt(n - 1)))
+        .catch(() => (n > 0
+          ? setTimeout(() => attempt(n - 1), 500)
+          : reject(new Error('backend did not come up'))))
+    }
+    attempt(retries)
+  })
+}
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1440,
-    height: 900,
+    width: 1520,
+    height: 950,
     backgroundColor: '#14161a',
+    title: 'LuxuryForm Studio',
     webPreferences: { contextIsolation: true, nodeIntegration: false },
   })
-
-  if (isDev) {
-    win.loadURL(DEV_URL)
-  } else {
-    win.loadFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'))
-  }
+  win.loadURL(APP_URL)
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  startBackend()
+  try {
+    await waitForBackend()
+  } catch (e) {
+    console.error(e)
+  }
   createWindow()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -29,5 +52,6 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
+  if (backend) backend.kill()
   app.quit()
 })

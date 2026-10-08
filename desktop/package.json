@@ -1,13 +1,21 @@
 {
-  "name": "sculptflow-studio-desktop",
+  "name": "luxuryform-studio-desktop",
   "private": true,
   "version": "0.1.0",
-  "description": "Electron shell for SculptFlow Studio",
+  "description": "LuxuryForm Studio desktop shell",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
   },
   "devDependencies": {
-    "electron": "^33.0.0"
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "studio.luxuryform",
+    "productName": "LuxuryForm Studio",
+    "directories": { "output": "dist-installer" },
+    "win": { "target": "nsis" }
   }
 }

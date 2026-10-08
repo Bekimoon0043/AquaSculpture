@@ -69,3 +69,25 @@ def test_api_endpoint_downloads_envelope():
     env = resp.json()
     assert env["platform"] == "LuxuryForm"
     assert env["payload"]["stats"]["fixtureCount"] > 0
+
+
+def test_devices_validate_against_aquaflow_schema():
+    """Real interop proof: our device records must validate against
+    AquaFlow's own lux-schema/device.schema.json (read-only)."""
+    import json as _json
+    from pathlib import Path
+
+    import jsonschema
+
+    schema_path = Path(r"E:\Burook platform development\Luxurycon"
+                       r"\aquaflow-phase1-stabilization-clean"
+                       r"\aquaflow\lux-schema\device.schema.json")
+    if not schema_path.exists():
+        pytest.skip("AquaFlow repo not present")
+    schema = _json.loads(schema_path.read_text(encoding="utf-8"))
+
+    from integration.aquaflow import build_device_list
+    devices = build_device_list(_result())
+    assert devices
+    for d in devices:
+        jsonschema.validate(d, schema)

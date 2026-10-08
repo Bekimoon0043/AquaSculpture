@@ -144,6 +144,41 @@ def _fixture_manifest(result: dict) -> list[dict]:
     return fixtures
 
 
+def build_device_list(result: dict) -> list[dict]:
+    """AquaFlow device records (their lux-schema/device.schema.json):
+    lights as DMX, valves/pump as Modbus — the show-control contract."""
+    devices = []
+    for row in (result.get("lighting") or {}).get("controls", {}).get("schedule", []):
+        devices.append({
+            "id": row["id"],
+            "kind": "light",
+            "protocol": "dmx512",
+            "address": {"universe": 1, "channel": row["dmx_address"]},
+            "capabilities": ["intensity", "rgb"],
+            "safety": {"default_state": "off"},
+        })
+    hyd = result.get("hydraulics") or {}
+    for i, v in enumerate(hyd.get("schedules", {}).get("valves", [])):
+        devices.append({
+            "id": f"VLV{i + 1:02d}",
+            "kind": "valve",
+            "protocol": "modbus_tcp",
+            "address": {"host": "192.168.1.10", "port": 502, "unit_id": i + 1},
+            "capabilities": ["open_close"],
+            "safety": {"default_state": "closed", "requires_water_ok": True},
+        })
+    if hyd.get("schedules", {}).get("pump"):
+        devices.append({
+            "id": "PMP01",
+            "kind": "pump",
+            "protocol": "modbus_tcp",
+            "address": {"host": "192.168.1.10", "port": 502, "unit_id": 90},
+            "capabilities": ["vfd_speed"],
+            "safety": {"default_state": "off", "requires_water_ok": True},
+        })
+    return devices
+
+
 def build_luxexchange(result: dict) -> dict:
     """Full LUXEXCHANGE v1 envelope from a pipeline result."""
     brief = result.get("brief") or {}
@@ -173,6 +208,8 @@ def build_luxexchange(result: dict) -> dict:
             },
             "gltf": _gltf_document(mesh["vertices"], mesh["faces"]),
             "fixtures": fixtures,
+            # AquaFlow runtime devices (their device.schema.json contract).
+            "devices": build_device_list(result),
             # Authored light-show program for AquaFlow to play (scope §14/§31).
             "show_program": (result.get("light_show") or {}).get("program"),
         },
