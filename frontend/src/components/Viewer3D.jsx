@@ -44,8 +44,8 @@ export default function Viewer3D() {
   useEffect(() => {
     const mount = mountRef.current
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x081410) // dark studio
-    scene.fog = new THREE.Fog(0x081410, 20, 60)
+    scene.background = new THREE.Color(0x0b0e12) // dark studio
+    scene.fog = new THREE.Fog(0x0b0e12, 20, 60)
     sceneRef.current = scene
 
     const camera = new THREE.PerspectiveCamera(
@@ -241,7 +241,7 @@ export default function Viewer3D() {
     const scene = sceneRef.current
     if (!scene) return
     if (!backdrop) {
-      scene.background = new THREE.Color(night ? 0x05080f : 0x081410)
+      scene.background = new THREE.Color(night ? 0x06080c : 0x0b0e12)
       scene.backgroundBlurriness = 0
       return
     }
@@ -258,8 +258,8 @@ export default function Viewer3D() {
     const lights = sceneLightsRef.current
     if (!scene || !lights) return
     if (!backdropRef.current) {
-      scene.background = new THREE.Color(night ? 0x05080f : 0x081410)
-      scene.fog = new THREE.Fog(night ? 0x05080f : 0x081410, 20, 60)
+      scene.background = new THREE.Color(night ? 0x06080c : 0x0b0e12)
+      scene.fog = new THREE.Fog(night ? 0x06080c : 0x0b0e12, 20, 60)
     }
     lights.hemi.intensity = night ? 0.25 : 0.9
     lights.key.intensity = night ? 0.4 : 1.6

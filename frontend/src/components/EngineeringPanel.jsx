@@ -82,17 +82,17 @@ export default function EngineeringPanel() {
 
 function gateStyle(status) {
   switch (status) {
-    case 'pass': return { background: '#1e4620', color: '#7bd88a' }
-    case 'warning': return { background: '#4a3b14', color: '#ffd166' }
-    case 'fail': return { background: '#4a1a1a', color: '#ff6b6b' }
+    case 'pass': return { background: '#1e4620', color: '#7fb285' }
+    case 'warning': return { background: '#4a3b14', color: '#c9a86a' }
+    case 'fail': return { background: '#4a1a1a', color: '#d08a8a' }
     default: return { background: '#262a32', color: '#666' }
   }
 }
 
 const styles = {
   panel: { padding: '12px', overflow: 'auto' },
-  heading: { margin: 0, fontSize: '11px', color: '#b3931f', textTransform: 'uppercase', letterSpacing: '1px' },
-  sub: { margin: '8px 0 2px', fontSize: '10px', color: '#b3931f', textTransform: 'uppercase', letterSpacing: '1px' },
+  heading: { margin: 0, fontSize: '11px', color: '#8b96a3', textTransform: 'uppercase', letterSpacing: '1px' },
+  sub: { margin: '8px 0 2px', fontSize: '10px', color: '#8b96a3', textTransform: 'uppercase', letterSpacing: '1px' },
   row: { display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '2px 0', gap: '8px' },
   label: { color: '#999', flexShrink: 0 },
   empty: { color: '#666', fontSize: '13px' },

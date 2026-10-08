@@ -8,7 +8,7 @@ export default function Toolbar() {
     <div className="toolbar">
       <span className="brand">
         <img src="/logo.svg" alt="AquaSculptor"
-             style={{ height: '26px', verticalAlign: 'middle', marginRight: '8px' }} />
+             style={{ height: '26px', width: '26px', borderRadius: '6px' }} />
         AquaSculptor
       </span>
       <span className="sep" />

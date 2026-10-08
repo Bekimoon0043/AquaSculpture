@@ -32,7 +32,7 @@ export default function CostPanel() {
       <div style={styles.item}><span>Margin {cost.margin_pct}%</span><span>{fmt(cost.margin_usd)}</span></div>
       <div style={styles.total}><span>TOTAL</span><span>{fmt(cost.total_usd)}</span></div>
       {cost.budget_usd != null && (
-        <div style={{ ...styles.budget, color: cost.over_budget ? '#ff6b6b' : '#7dd87d' }}>
+        <div style={{ ...styles.budget, color: cost.over_budget ? '#d08a8a' : '#7dd87d' }}>
           Budget {fmt(cost.budget_usd)} — {cost.over_budget
             ? `OVER by ${fmt(cost.budget_delta_usd)}`
             : `under by ${fmt(-cost.budget_delta_usd)}`}
@@ -50,7 +50,7 @@ const styles = {
   heading: { margin: 0, fontSize: '14px', color: '#ccc', textTransform: 'uppercase' },
   section: {
     display: 'flex', justifyContent: 'space-between', fontSize: '13px',
-    fontWeight: 700, marginTop: '10px', color: '#d4af37',
+    fontWeight: 700, marginTop: '10px', color: '#c9a86a',
   },
   item: {
     display: 'flex', justifyContent: 'space-between', fontSize: '12px',
