@@ -50,3 +50,11 @@ cd desktop
 npm install   # skipped in Phase 0 — heavy download
 npm start     # dev: loads http://localhost:5173; packaged: loads frontend/dist
 ```
+
+## Run as a single app (no dev servers)
+
+1. `cd frontend && npm run build` (once, or after UI changes)
+2. Double-click **LuxuryForm Studio.bat** — opens http://localhost:8100
+
+The backend serves the built UI + API on one port. Dev mode (hot reload):
+backend `python main.py` (:8100), frontend `npm run dev` (:5173).

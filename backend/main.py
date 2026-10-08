@@ -29,6 +29,25 @@ app.include_router(review_route.router, prefix="/api")
 app.include_router(learning_route.router, prefix="/api")
 app.include_router(concepts_route.router, prefix="/api")
 
+# Single-process mode: serve the built frontend (frontend/dist) at /.
+# `npm run build` in frontend/ -> everything under one port, no dev servers.
+from pathlib import Path
+
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+if DIST.exists():
+    app.mount("/assets", StaticFiles(directory=DIST / "assets"), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def spa_fallback(full_path: str):
+        if full_path.startswith("api/"):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404)
+        target = DIST / full_path
+        return FileResponse(target if target.is_file() else DIST / "index.html")
+
 
 if __name__ == "__main__":
     import uvicorn
