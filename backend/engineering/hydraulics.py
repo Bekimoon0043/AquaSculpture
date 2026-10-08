@@ -14,7 +14,7 @@ import json
 import math
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+from config import DATA_DIR
 
 GRAVITY = 9.81
 RHO_WATER = 1000.0

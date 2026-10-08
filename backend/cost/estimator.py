@@ -10,7 +10,7 @@ import json
 import math
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+from config import DATA_DIR
 
 CONTINGENCY_PCT = 10.0
 MARGIN_PCT = 15.0

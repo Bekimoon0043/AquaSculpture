@@ -1,15 +1,15 @@
-/* SculptFlow Studio — dark professional 3D-tool theme (Blender/C4D idiom).
-   Viewport is king: chrome stays thin, docks collapse, one accent color. */
+/* AquaSculptor — luxury green & gold theme (from the house crest).
+   Viewport is king: chrome stays thin, docks collapse, gold accent. */
 
 :root {
-  --bg-viewport: #14161a;
-  --bg-chrome: #1b1e24;
-  --bg-panel: #22262e;
-  --bg-hover: #2b303a;
-  --border: #33383f;
-  --text: #d8dce2;
-  --text-dim: #8a919c;
-  --accent: #4f8cff;
+  --bg-viewport: #081410;
+  --bg-chrome: #0e241b;
+  --bg-panel: #143227;
+  --bg-hover: #1c4534;
+  --border: #2b4d3c;
+  --text: #ece7d8;
+  --text-dim: #93a795;
+  --accent: #c9a227;
   --danger: #ff6b6b;
   font-size: 13px;
 }

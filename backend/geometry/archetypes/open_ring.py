@@ -14,7 +14,8 @@ from pathlib import Path
 
 import numpy as np
 
-MATERIALS_PATH = Path(__file__).resolve().parents[2] / "data" / "materials.json"
+from config import DATA_DIR
+MATERIALS_PATH = DATA_DIR / "materials.json"
 
 DEFAULT_SHELL_THICKNESS_M = 0.003
 

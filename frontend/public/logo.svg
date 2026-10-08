@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e3a2a"/>
+      <stop offset="1" stop-color="#071f16"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e8cf8a"/>
+      <stop offset="0.5" stop-color="#c9a227"/>
+      <stop offset="1" stop-color="#8f6b14"/>
+    </linearGradient>
+  </defs>
+  <!-- shield -->
+  <path d="M60 8 C74 16 92 20 106 20 C106 66 92 96 60 112 C28 96 14 66 14 20 C28 20 46 16 60 8 Z"
+        fill="url(#face)" stroke="url(#gold)" stroke-width="4"/>
+  <!-- corner flourishes -->
+  <g fill="none" stroke="url(#gold)" stroke-width="2.4" stroke-linecap="round">
+    <path d="M30 34 c-6 0 -9 5 -7 9 c1 3 5 4 7 2 c2 -2 1 -6 -2 -6"/>
+    <path d="M30 34 c10 -2 16 2 18 10"/>
+    <path d="M90 34 c6 0 9 5 7 9 c-1 3 -5 4 -7 2 c-2 -2 -1 -6 2 -6"/>
+    <path d="M90 34 c-10 -2 -16 2 -18 10"/>
+    <path d="M32 92 c-4 4 -4 9 0 11 c3 1.6 6.4 0 6.8 -3 c0.4 -3 -2.4 -5 -5 -3.4"/>
+    <path d="M32 92 c8 6 16 8 24 8"/>
+    <path d="M88 92 c4 4 4 9 0 11 c-3 1.6 -6.4 0 -6.8 -3 c-0.4 -3 2.4 -5 5 -3.4"/>
+    <path d="M88 92 c-8 6 -16 8 -24 8"/>
+  </g>
+  <!-- serif L -->
+  <text x="60" y="80" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="56" font-weight="700" fill="url(#gold)">L</text>
+</svg>

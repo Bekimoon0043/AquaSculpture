@@ -8,3 +8,7 @@ backend/data/projects/
 
 models/
 backend/data/knowledge/
+
+backend/build/
+backend/dist/
+backend/*.spec

@@ -92,7 +92,7 @@ function gateStyle(status) {
 const styles = {
   panel: { padding: '12px', overflow: 'auto' },
   heading: { margin: 0, fontSize: '14px', color: '#ccc', textTransform: 'uppercase' },
-  sub: { margin: '10px 0 4px', fontSize: '12px', color: '#7da7ff', textTransform: 'uppercase' },
+  sub: { margin: '10px 0 4px', fontSize: '12px', color: '#c9a227', textTransform: 'uppercase' },
   row: { display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '2px 0', gap: '8px' },
   label: { color: '#999', flexShrink: 0 },
   empty: { color: '#666', fontSize: '13px' },

@@ -12,7 +12,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-STORE = Path(__file__).resolve().parents[1] / "data" / "knowledge" / "runs.jsonl"
+from config import WRITE_DIR
+STORE = WRITE_DIR / "knowledge" / "runs.jsonl"
 
 
 def _append(record: dict) -> None:

@@ -1,8 +1,8 @@
 {
-  "name": "luxuryform-studio-desktop",
+  "name": "aquasculptor-studio-desktop",
   "private": true,
   "version": "0.1.0",
-  "description": "LuxuryForm Studio desktop shell",
+  "description": "AquaSculptor desktop shell",
   "main": "main.js",
   "scripts": {
     "start": "cmd /c \"set ELECTRON_RUN_AS_NODE=&& electron .\"",
@@ -13,8 +13,8 @@
     "electron-builder": "^25.0.0"
   },
   "build": {
-    "appId": "studio.luxuryform",
-    "productName": "LuxuryForm Studio",
+    "appId": "studio.aquasculptor",
+    "productName": "AquaSculptor",
     "directories": { "output": "dist-installer" },
     "win": { "target": "nsis" }
   }

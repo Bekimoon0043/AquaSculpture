@@ -52,7 +52,7 @@ def build_glb(vertices, faces) -> bytes:
         bin_blob += b"\x00" * (4 - len(bin_blob) % 4)
 
     gltf = {
-        "asset": {"version": "2.0", "generator": "SculptFlow Studio"},
+        "asset": {"version": "2.0", "generator": "AquaSculptor"},
         "scene": 0,
         "scenes": [{"nodes": [0]}],
         "nodes": [{"mesh": 0}],

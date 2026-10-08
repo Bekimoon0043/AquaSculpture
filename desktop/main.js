@@ -1,4 +1,4 @@
-// LuxuryForm Studio — Electron shell.
+// AquaSculptor — Electron shell.
 // Spawns the Python backend (single-process mode: it serves the UI on :8100),
 // then loads the app in a native window. Kills the backend on exit.
 // ELECTRON_RUN_AS_NODE is stripped: some dev machines set it globally, which
@@ -36,7 +36,7 @@ function createWindow() {
     width: 1520,
     height: 950,
     backgroundColor: '#14161a',
-    title: 'LuxuryForm Studio',
+    title: 'AquaSculptor',
     webPreferences: { contextIsolation: true, nodeIntegration: false },
   })
   win.loadURL(APP_URL)

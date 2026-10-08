@@ -26,6 +26,9 @@ export default function Viewer3D() {
   const [showWater, setShowWater] = useState(true)
   const [night, setNight] = useState(false)
   const [showLux, setShowLux] = useState(false)
+  const [backdrop, setBackdrop] = useState(null)  // site photo URL
+  const backdropRef = useRef(null)
+  backdropRef.current = backdrop
   const showLuxRef = useRef(false)
   showLuxRef.current = showLux
   const nightRef = useRef(false)
@@ -41,8 +44,8 @@ export default function Viewer3D() {
   useEffect(() => {
     const mount = mountRef.current
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x14161a) // dark studio
-    scene.fog = new THREE.Fog(0x14161a, 20, 60)
+    scene.background = new THREE.Color(0x081410) // dark studio
+    scene.fog = new THREE.Fog(0x081410, 20, 60)
     sceneRef.current = scene
 
     const camera = new THREE.PerspectiveCamera(
@@ -233,13 +236,31 @@ export default function Viewer3D() {
     if (lm) lm.visible = showLux
   }, [showLux, engineering])
 
+  // Site photo backdrop (scope §30 site integration).
+  useEffect(() => {
+    const scene = sceneRef.current
+    if (!scene) return
+    if (!backdrop) {
+      scene.background = new THREE.Color(night ? 0x05080f : 0x081410)
+      scene.backgroundBlurriness = 0
+      return
+    }
+    new THREE.TextureLoader().load(backdrop, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace
+      scene.background = tex
+    })
+    return () => URL.revokeObjectURL(backdrop)
+  }, [backdrop, night])
+
   // Night mode (scope §30): dark sky, dimmed key lights, glowing water.
   useEffect(() => {
     const scene = sceneRef.current
     const lights = sceneLightsRef.current
     if (!scene || !lights) return
-    scene.background = new THREE.Color(night ? 0x05080f : 0x14161a)
-    scene.fog = new THREE.Fog(night ? 0x05080f : 0x14161a, 20, 60)
+    if (!backdropRef.current) {
+      scene.background = new THREE.Color(night ? 0x05080f : 0x081410)
+      scene.fog = new THREE.Fog(night ? 0x05080f : 0x081410, 20, 60)
+    }
     lights.hemi.intensity = night ? 0.25 : 0.9
     lights.key.intensity = night ? 0.4 : 2.0
     lights.fill.intensity = night ? 0.2 : 0.8
@@ -321,6 +342,19 @@ export default function Viewer3D() {
         >
           Lux
         </button>
+        <label className="btn" title="Load a site photo as the backdrop">
+          Site
+          <input type="file" accept="image/*" style={{ display: 'none' }}
+                 onChange={(e) => {
+                   const f = e.target.files?.[0]
+                   if (f) setBackdrop(URL.createObjectURL(f))
+                 }} />
+        </label>
+        {backdrop && (
+          <button className="btn" onClick={() => setBackdrop(null)}>
+            Clear
+          </button>
+        )}
       </div>
       {size && (
         <div className="view-dims">

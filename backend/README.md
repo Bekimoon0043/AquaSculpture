@@ -1,4 +1,4 @@
-# SculptFlow Studio — Backend
+# AquaSculptor — Backend
 
 Python + FastAPI, port 8100.
 

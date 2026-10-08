@@ -16,7 +16,7 @@ from pathlib import Path
 import httpx
 import jsonschema
 
-SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schemas" / "design-brief.schema.json"
+from config import SCHEMA_PATH
 SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
 
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
@@ -29,7 +29,7 @@ IMPLEMENTED_FAMILIES = (
     "arc_fin_array", "relief_panel", "buddha_seated",
 )
 
-SYSTEM_PROMPT = """You are the design interpreter for SculptFlow Studio, a sculpture + fountain design tool.
+SYSTEM_PROMPT = """You are the design interpreter for AquaSculptor, a sculpture + fountain design tool.
 Convert the user's request into ONE design brief JSON object. Output ONLY the JSON — no prose, no markdown fences.
 
 Required shape:

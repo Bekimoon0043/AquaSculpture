@@ -6,7 +6,11 @@ export default function Toolbar() {
 
   return (
     <div className="toolbar">
-      <span className="brand">SculptFlow Studio</span>
+      <span className="brand">
+        <img src="/logo.svg" alt="AquaSculptor"
+             style={{ height: '26px', verticalAlign: 'middle', marginRight: '8px' }} />
+        AquaSculptor
+      </span>
       <span className="sep" />
       <label htmlFor="family-select" style={{ color: 'var(--text-dim)' }}>Family</label>
       <select

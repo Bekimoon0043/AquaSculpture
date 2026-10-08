@@ -50,7 +50,7 @@ const styles = {
   heading: { margin: 0, fontSize: '14px', color: '#ccc', textTransform: 'uppercase' },
   section: {
     display: 'flex', justifyContent: 'space-between', fontSize: '13px',
-    fontWeight: 700, marginTop: '10px', color: '#7da7ff',
+    fontWeight: 700, marginTop: '10px', color: '#c9a227',
   },
   item: {
     display: 'flex', justifyContent: 'space-between', fontSize: '12px',

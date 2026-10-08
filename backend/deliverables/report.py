@@ -67,7 +67,7 @@ def engineering_report_pages(brief: dict, sculpture_meta: dict, geo: dict,
     sculpture = brief.get("sculpture") or {}
 
     cover = [
-        ("SculptFlow Studio — Engineering Report", 20),
+        ("AquaSculptor — Engineering Report", 20),
         ("", 10),
         (f"Project: {project.get('name', '-')}", 14),
         (f"Site: {project.get('site', '-')}", 12),

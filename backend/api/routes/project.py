@@ -7,7 +7,8 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/project", tags=["project"])
 
-PROJECTS_DIR = Path(__file__).resolve().parents[2] / "data" / "projects"
+from config import WRITE_DIR
+PROJECTS_DIR = WRITE_DIR / "projects"
 
 _NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 _-]{0,63}$")
 

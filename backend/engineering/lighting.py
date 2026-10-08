@@ -16,7 +16,8 @@ from pathlib import Path
 
 import numpy as np
 
-DATA = Path(__file__).resolve().parents[1] / "data" / "lighting.json"
+from config import DATA_DIR as _DATA_DIR
+DATA = _DATA_DIR / "lighting.json"
 CATALOG = json.loads(DATA.read_text(encoding="utf-8"))
 
 PSU_WATTAGE = 320.0

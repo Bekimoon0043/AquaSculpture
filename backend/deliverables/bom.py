@@ -67,7 +67,7 @@ def build_xlsx(rows: list[list]) -> bytes:
 
 def cost_tree_rows(cost: dict) -> list[list]:
     """Flatten the estimator cost tree into spreadsheet rows."""
-    rows = [["SculptFlow Studio — BOM & Cost Breakdown"], [],
+    rows = [["AquaSculptor — BOM & Cost Breakdown"], [],
             ["Section", "Item", "Qty", "Unit", "Unit price USD", "Amount USD"]]
     for s in cost["sections"]:
         first = True

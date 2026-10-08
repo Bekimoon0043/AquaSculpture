@@ -117,9 +117,8 @@ def compute_structural(brief: dict, geo: dict, sculpture_meta: dict,
     thermal = {}
     if sculpture_meta.get("material"):
         import json as _json
-        from pathlib import Path as _Path
-        mats = _json.loads((_Path(__file__).resolve().parents[1]
-                            / "data" / "materials.json").read_text())
+        from config import DATA_DIR as _DATA_DIR
+        mats = _json.loads((_DATA_DIR / "materials.json").read_text())
         alpha = (mats.get(sculpture_meta["material"]) or {}).get(
             "thermal_expansion_per_k", 1.2e-5)
         longest = max(size)

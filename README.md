@@ -1,4 +1,4 @@
-# SculptFlow Studio
+# AquaSculptor
 
 Prompt-to-engineering design software for sculptures and fountains.
 See `PLAN.md` for the master plan. Status: Phase 0 skeleton + Phase 1 `open_ring` seed.

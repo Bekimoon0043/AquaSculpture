@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/brief", tags=["brief"])
 
-SCHEMA_PATH = Path(__file__).resolve().parents[3] / "schemas" / "design-brief.schema.json"
+from config import SCHEMA_PATH
 
 EXAMPLE_BRIEF = {
     "project": {"name": "Atrium Crescent", "site": "hotel atrium", "budget_usd": 250000},

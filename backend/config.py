@@ -1,13 +1,28 @@
-"""Configuration: dependency-free .env loader.
+"""Configuration: dependency-free .env loader + bundle-aware paths.
 
-Loads KEY=VALUE lines from the project-root .env into os.environ
-(without overriding variables already set in the environment).
+PyInstaller onefile puts bundled read-only assets under sys._MEIPASS;
+writable data (.env, projects, knowledge store) lives beside the exe.
 """
 
 import os
+import sys
 from pathlib import Path
 
-ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
+FROZEN = getattr(sys, "frozen", False)
+if FROZEN:
+    RESOURCE_ROOT = Path(sys._MEIPASS)                    # bundled assets
+    APP_DIR = Path(sys.executable).resolve().parent       # beside the exe
+else:
+    RESOURCE_ROOT = Path(__file__).resolve().parents[1]   # repo root
+    APP_DIR = Path(__file__).resolve().parent             # backend/
+
+ENV_PATH = APP_DIR / ".env" if FROZEN else RESOURCE_ROOT / ".env"
+# Catalogs (read-only): bundled "data/" when frozen, backend/data/ in dev.
+DATA_DIR = (RESOURCE_ROOT / "data") if FROZEN else Path(__file__).resolve().parent / "data"
+# Writable stores (projects, knowledge): beside the exe when frozen.
+WRITE_DIR = (APP_DIR / "data") if FROZEN else Path(__file__).resolve().parent / "data"
+SCHEMA_PATH = RESOURCE_ROOT / "schemas" / "design-brief.schema.json"
+FRONTEND_DIST = RESOURCE_ROOT / "frontend" / "dist"
 
 
 def load_env(path: Path = ENV_PATH) -> None:
