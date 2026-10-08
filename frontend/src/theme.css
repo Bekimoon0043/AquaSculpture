@@ -1,17 +1,18 @@
-/* AquaSculptor — luxury green & gold theme (from the house crest).
-   Viewport is king: chrome stays thin, docks collapse, gold accent. */
+/* AquaSculptor — crest green & gold, DCC-tool idiom (Blender/C4D):
+   dense, square corners, compact 12px type, thin chrome, gold accent.
+   Viewport is king: everything else collapses out of the way. */
 
 :root {
   --bg-viewport: #081410;
-  --bg-chrome: #0e241b;
-  --bg-panel: #143227;
-  --bg-hover: #1c4534;
-  --border: #2b4d3c;
-  --text: #ece7d8;
-  --text-dim: #93a795;
-  --accent: #c9a227;
-  --danger: #ff6b6b;
-  font-size: 13px;
+  --bg-chrome: #0c1f17;
+  --bg-panel: #10281e;
+  --bg-hover: #1a3d2d;
+  --border: #234534;
+  --text: #ddd8c8;
+  --text-dim: #7e947f;
+  --accent: #b3931f;
+  --danger: #e05555;
+  font-size: 12px;
 }
 
 * { box-sizing: border-box; }
@@ -29,100 +30,120 @@ html, body, #root {
 .app-main { flex: 1; display: flex; min-height: 0; }
 .viewport { flex: 1; position: relative; min-width: 0; }
 
-/* ── Toolbar ─────────────────────────────────────────────── */
+/* ── Toolbar: thin strip, dense controls ─────────────────── */
 .toolbar {
-  display: flex; align-items: center; gap: 10px;
-  height: 40px; padding: 0 12px;
+  display: flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 8px;
   background: var(--bg-chrome); border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
-.toolbar .brand { font-weight: 700; letter-spacing: 0.5px; margin-right: 8px; }
-.toolbar .sep { width: 1px; height: 22px; background: var(--border); }
+.toolbar .brand {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700; letter-spacing: 1px; margin-right: 6px;
+  color: var(--accent); font-size: 13px;
+}
+.toolbar label { color: var(--text-dim); font-size: 11px; }
+.toolbar .sep { width: 1px; height: 18px; background: var(--border); }
 .toolbar select {
   background: var(--bg-panel); color: var(--text);
-  border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px;
+  border: 1px solid var(--border); border-radius: 2px;
+  padding: 2px 6px; font-size: 11px; height: 22px;
 }
 .btn {
   background: var(--bg-panel); color: var(--text);
-  border: 1px solid var(--border); border-radius: 4px;
-  padding: 5px 12px; cursor: pointer; font: inherit;
+  border: 1px solid var(--border); border-radius: 2px;
+  padding: 2px 9px; cursor: pointer; font: inherit; font-size: 11px;
+  height: 22px; text-transform: uppercase; letter-spacing: 0.4px;
 }
-.btn:hover { background: var(--bg-hover); }
-.btn:disabled { opacity: 0.5; cursor: default; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
-.btn.primary:hover { filter: brightness(1.1); }
+.btn:hover { background: var(--bg-hover); border-color: #3a5d48; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #0c1f17; font-weight: 700; }
+.btn.primary:hover { filter: brightness(1.08); }
 
-/* ── Docks (collapsible tabbed panels) ───────────────────── */
+/* ── Docks: collapsible tabbed panels (Blender areas) ────── */
 .dock {
-  width: 320px; flex-shrink: 0; display: flex; flex-direction: column;
+  width: 290px; flex-shrink: 0; display: flex; flex-direction: column;
   background: var(--bg-chrome); min-height: 0;
 }
 .dock.left { border-right: 1px solid var(--border); }
 .dock.right { border-left: 1px solid var(--border); }
-.dock.collapsed { width: 34px; }
-.dock-tabs { display: flex; border-bottom: 1px solid var(--border); }
+.dock.collapsed { width: 26px; }
+.dock-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-chrome); }
 .dock-tab {
-  flex: 1; padding: 7px 4px; text-align: center; cursor: pointer;
-  color: var(--text-dim); background: transparent; border: none; font: inherit;
+  flex: 1; padding: 5px 2px; text-align: center; cursor: pointer;
+  color: var(--text-dim); background: transparent; border: none;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px;
   border-bottom: 2px solid transparent;
 }
-.dock-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.dock-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .dock-body { flex: 1; overflow: auto; min-height: 0; }
 .dock-collapse {
-  width: 100%; padding: 6px 0; background: var(--bg-panel);
+  width: 100%; padding: 4px 0; background: var(--bg-panel);
   border: none; border-top: 1px solid var(--border);
-  color: var(--text-dim); cursor: pointer; font: inherit;
+  color: var(--text-dim); cursor: pointer; font-size: 10px;
 }
 .dock.collapsed .dock-tabs, .dock.collapsed .dock-body { display: none; }
-.dock.collapsed .dock-collapse { writing-mode: vertical-rl; padding: 10px 0; height: 100%; border-top: none; }
+.dock.collapsed .dock-collapse { writing-mode: vertical-rl; padding: 8px 0; height: 100%; border-top: none; }
 
 /* ── Panels inside docks ─────────────────────────────────── */
-.panel { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.panel { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
 .panel h2 {
-  margin: 0; font-size: 12px; color: var(--text-dim);
-  text-transform: uppercase; letter-spacing: 0.8px;
+  margin: 0; font-size: 10px; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 1px;
+  border-bottom: 1px solid var(--border); padding-bottom: 4px;
 }
 .panel textarea {
   background: var(--bg-panel); color: var(--text);
-  border: 1px solid var(--border); border-radius: 4px;
-  padding: 8px; resize: vertical; font: inherit; min-height: 90px;
+  border: 1px solid var(--border); border-radius: 2px;
+  padding: 6px; resize: vertical; font: inherit; font-size: 12px; min-height: 80px;
 }
 .panel pre {
-  margin: 0; padding: 8px; background: var(--bg-panel);
-  border: 1px solid var(--border); border-radius: 4px;
-  font-size: 11px; overflow: auto; white-space: pre-wrap;
+  margin: 0; padding: 6px; background: var(--bg-panel);
+  border: 1px solid var(--border); border-radius: 2px;
+  font-size: 10.5px; overflow: auto; white-space: pre-wrap;
+  font-family: 'Cascadia Mono', Consolas, monospace;
 }
-.panel .error { color: var(--danger); margin: 0; }
-.panel .hint { color: var(--text-dim); font-size: 12px; margin: 0; }
-.panel table { width: 100%; border-collapse: collapse; }
+.panel .error { color: var(--danger); margin: 0; font-size: 11px; }
+.panel .hint { color: var(--text-dim); font-size: 11px; margin: 0; }
+.panel table { width: 100%; border-collapse: collapse; font-size: 11px; }
 .panel td, .panel th {
-  padding: 4px 6px; text-align: left;
+  padding: 2px 4px; text-align: left;
   border-bottom: 1px solid var(--border);
 }
-.panel td.num, .panel th.num { text-align: right; font-variant-numeric: tabular-nums; }
-
-/* ── Viewport overlay controls ───────────────────────────── */
-.view-tools {
-  position: absolute; top: 10px; left: 10px;
-  display: flex; gap: 4px; z-index: 5;
+.panel td.num, .panel th.num {
+  text-align: right; font-variant-numeric: tabular-nums;
+  font-family: 'Cascadia Mono', Consolas, monospace;
 }
-.view-tools .btn { padding: 4px 10px; font-size: 12px; opacity: 0.92; }
+.panel select, .panel input[type="number"] {
+  background: var(--bg-panel); color: var(--text);
+  border: 1px solid var(--border); border-radius: 2px;
+  padding: 2px 4px; font-size: 11px;
+}
+
+/* ── Viewport overlay controls: minimal, out of the way ──── */
+.view-tools {
+  position: absolute; top: 6px; left: 6px;
+  display: flex; gap: 2px; z-index: 5;
+}
+.view-tools .btn { padding: 2px 8px; font-size: 10px; opacity: 0.85; }
 .view-tools .btn.active { border-color: var(--accent); color: var(--accent); }
 .view-dims {
-  position: absolute; bottom: 10px; left: 10px; z-index: 5;
-  background: rgba(27, 30, 36, 0.85); border: 1px solid var(--border);
-  border-radius: 4px; padding: 6px 10px; font-size: 12px;
-  color: var(--text-dim); font-variant-numeric: tabular-nums;
+  position: absolute; bottom: 6px; left: 6px; z-index: 5;
+  background: rgba(12, 31, 23, 0.85); border: 1px solid var(--border);
+  border-radius: 2px; padding: 3px 8px; font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'Cascadia Mono', Consolas, monospace; font-variant-numeric: tabular-nums;
 }
 
-/* ── Status bar ──────────────────────────────────────────── */
+/* ── Status bar: dense 22px strip ────────────────────────── */
 .statusbar {
-  display: flex; align-items: center; gap: 16px;
-  height: 26px; padding: 0 12px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 14px;
+  height: 22px; padding: 0 8px; flex-shrink: 0;
   background: var(--bg-chrome); border-top: 1px solid var(--border);
-  color: var(--text-dim); font-size: 12px;
+  color: var(--text-dim); font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
 }
-.statusbar .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-.statusbar .dot.up { background: #4caf50; }
+.statusbar .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.statusbar .dot.up { background: #57ab6b; }
 .statusbar .dot.down { background: var(--danger); }
 .statusbar .spacer { flex: 1; }

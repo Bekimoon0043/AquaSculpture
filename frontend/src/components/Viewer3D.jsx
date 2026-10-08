@@ -80,7 +80,7 @@ export default function Viewer3D() {
     const fill = new THREE.DirectionalLight(0xcfe0ff, 0.8)
     fill.position.set(-6, 4, 3)
     scene.add(fill)
-    const rim = new THREE.DirectionalLight(0xffe8c0, 1.2)
+    const rim = new THREE.DirectionalLight(0xfff4e0, 0.55)
     rim.position.set(-3, 6, -8)
     scene.add(rim)
     sceneLightsRef.current = { hemi, key, fill, rim }
@@ -262,9 +262,9 @@ export default function Viewer3D() {
       scene.fog = new THREE.Fog(night ? 0x05080f : 0x081410, 20, 60)
     }
     lights.hemi.intensity = night ? 0.25 : 0.9
-    lights.key.intensity = night ? 0.4 : 2.0
+    lights.key.intensity = night ? 0.4 : 1.6
     lights.fill.intensity = night ? 0.2 : 0.8
-    lights.rim.intensity = night ? 1.8 : 1.2   // rim glow reads at night
+    lights.rim.intensity = night ? 0.9 : 0.55   // subtle warm rim
     if (waterRef.current?.group) {
       waterRef.current.group.traverse((o) => {
         if (o.material?.opacity !== undefined) {
