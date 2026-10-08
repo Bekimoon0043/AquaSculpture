@@ -5,8 +5,8 @@
   "description": "LuxuryForm Studio desktop shell",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder"
+    "start": "cmd /c \"set ELECTRON_RUN_AS_NODE=&& electron .\"",
+    "dist": "cmd /c \"set ELECTRON_RUN_AS_NODE=&& electron-builder\""
   },
   "devDependencies": {
     "electron": "^33.0.0",

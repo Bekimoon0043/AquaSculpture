@@ -1,6 +1,10 @@
 // LuxuryForm Studio — Electron shell.
 // Spawns the Python backend (single-process mode: it serves the UI on :8100),
 // then loads the app in a native window. Kills the backend on exit.
+// ELECTRON_RUN_AS_NODE is stripped: some dev machines set it globally, which
+// silently turns Electron into plain Node (app becomes undefined).
+delete process.env.ELECTRON_RUN_AS_NODE
+
 const { app, BrowserWindow } = require('electron')
 const { spawn } = require('child_process')
 const path = require('path')
