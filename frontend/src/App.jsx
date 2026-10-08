@@ -8,6 +8,7 @@ import EngineeringPanel from './components/EngineeringPanel'
 import CostPanel from './components/CostPanel'
 import TimelinePanel from './components/TimelinePanel'
 import CopilotPanel from './components/CopilotPanel'
+import ConceptsPanel from './components/ConceptsPanel'
 import ExportPanel from './components/ExportPanel'
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
           tabs={[
             { label: 'Prompt', node: <PromptConsole /> },
             { label: 'Brief', node: <BriefEditor /> },
+            { label: 'Concepts', node: <ConceptsPanel /> },
             { label: 'Copilot', node: <CopilotPanel /> },
           ]}
         />

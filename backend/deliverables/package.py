@@ -5,7 +5,7 @@ import io
 import json
 import zipfile
 
-from deliverables import bom, drawings, dxf, export_3d, report, step_export
+from deliverables import bom, drawings, dxf, export_3d, iges_export, report, step_export
 
 
 def build_package(brief: dict, sculpture_mesh: dict, sculpture_meta: dict,
@@ -36,6 +36,9 @@ def build_package(brief: dict, sculpture_mesh: dict, sculpture_meta: dict,
     if panels:
         artifacts["panels.dxf"] = dxf.flat_patterns_bytes(panels)
     artifacts["sculpture.step"] = step_export.step_bytes(
+        sculpture_mesh["vertices"], sculpture_mesh["faces"],
+        name=(brief.get("project") or {}).get("name", "sculpture"))
+    artifacts["sculpture.iges"] = iges_export.iges_bytes(
         sculpture_mesh["vertices"], sculpture_mesh["faces"],
         name=(brief.get("project") or {}).get("name", "sculpture"))
     artifacts["ga_drawing.dxf"] = drawings.ga_drawing_bytes(

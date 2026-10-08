@@ -110,3 +110,17 @@ def test_ga_drawing():
     assert text.rstrip().endswith("EOF")
     assert text.count("PLAN") == 1 and "FRONT" in text and "SIDE" in text
     assert text.count("\nLINE") > 10  # silhouette edges present
+
+
+def test_iges_wireframe():
+    from deliverables import iges_export
+    from geometry.archetypes import generate
+    mesh = generate("open_ring", {"diameter_m": 2.0, "tube_radius_m": 0.1,
+                                  "opening_deg": 90, "segments": 8},
+                    "stainless_316l", 2.0)
+    text = iges_export.build_iges(mesh["vertices"], mesh["faces"])
+    lines = text.splitlines()
+    assert all(len(l) == 80 for l in lines)       # 80-column card format
+    assert lines[0][72] == "S"
+    assert any(l[72] == "T" for l in lines)
+    assert text.count("110,") > 100               # line entities
