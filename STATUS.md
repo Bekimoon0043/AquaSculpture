@@ -35,7 +35,7 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | 26 | CAD/Manufacturing Export | 4% | **4** | STL + GLB + DXF cutting sheets + STEP AP214 faceted BREP in ZIP. Next: GA drawings, IGES, STEP import QA in CAD kernel |
 | 27 | Engineering Documentation | 3% | **3** | PDF report + quotation page + XLSX BOM + GA drawing DXF (plan/front/side silhouettes + dims) + method statement in ZIP. Next: dedicated discipline reports, weld drawings |
 | 28 | Visualization | 2% | **4** | Viewport + studio/night modes + Gerstner water + skeleton x-ray + lux heat-map + splash zones. Next: site photo backdrop, 360 export |
-| 29 | AquaFlow Integration | 2% | **3** | LUXEXCHANGE v1 export live: nozzles+flows, lights+DMX patch, pump/valves, embedded glTF, /api/integration/aquaflow. Next: AquaFlow-side import test, show-program return path |
+| 29 | AquaFlow Integration | 2% | **4** | LUXEXCHANGE v1 + device records validated against AquaFlow's own lux-schema (read-only interop test), show program embedded. Next: AquaFlow-side import UI test |
 | 30 | Learning/CogniNet | 2% | **3** | Store + actuals delta analysis + automatic crew-day recalibration feeding new estimates. Next: CogniNet bridge, supplier price learning |
 
 ## Design gates (scope §28) — current state
