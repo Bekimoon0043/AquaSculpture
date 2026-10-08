@@ -94,6 +94,50 @@ def hazen_williams_headloss_m(flow_m3s: float, length_m: float, inner_d_m: float
     return 10.67 * length_m * flow_m3s**1.852 / (c**1.852 * inner_d_m**4.87)
 
 
+def _pump_duty_point(total_m3s: float, tdh_m: float, motor_kw: float) -> dict | None:
+    """Duty point: intersection of pump curve H = H0*(1-(Q/Qmax)^2) with the
+    system curve. If the intersection doesn't meet demand with >=10% margin,
+    the pump class is upsized (bigger shutoff + run-out) and re-checked."""
+    if total_m3s <= 0 or motor_kw <= 0:
+        return None
+    h_static = tdh_m * 0.55                # static+nozzle share (approx)
+    k_sys = (tdh_m - h_static) / total_m3s**1.852
+
+    def h_sys(q):
+        return h_static + k_sys * q**1.852
+
+    for scale in (1.0, 1.25, 1.6, 2.0, 2.6, 3.4):
+        h0 = tdh_m * 1.35 * scale
+        qmax = total_m3s * 1.6 * scale
+
+        def h_pump(q):
+            return h0 * (1.0 - (q / qmax) ** 2)
+
+        lo, hi = 0.001 * qmax, 0.999 * qmax
+        for _ in range(60):
+            mid = (lo + hi) / 2
+            if h_pump(mid) > h_sys(mid):
+                lo = mid
+            else:
+                hi = mid
+        q_duty = (lo + hi) / 2
+        margin = (q_duty - total_m3s) / total_m3s
+        if margin >= 0.10:
+            return {
+                "pump_class": f"{motor_kw * scale:.1f} kW class",
+                "shutoff_head_m": round(h0, 2),
+                "runout_flow_lps": round(qmax * 1000.0, 1),
+                "duty_flow_lps": round(q_duty * 1000.0, 1),
+                "duty_head_m": round(h_pump(q_duty), 2),
+                "flow_margin_pct": round(margin * 100.0, 1),
+                "duty_ok": True,
+                "upsize_count": (1.0, 1.25, 1.6, 2.0, 2.6, 3.4).index(scale),
+            }
+    return {"duty_ok": False,
+            "note": "no catalog class meets demand with 10% margin — "
+                    "split into two duty pumps"}
+
+
 def compute_hydraulics(brief: dict, basin_meta: dict | None = None) -> dict:
     """Full network: branch flows/losses, manifold, valves, filtration,
     TDH, pump duty, equipment schedules (scope §9/§11)."""
@@ -235,5 +279,6 @@ def compute_hydraulics(brief: dict, basin_meta: dict | None = None) -> dict:
         "pump_efficiency": PUMP_EFFICIENCY,
         "turnover_min": turnover_min,
         "filtration": filtration,
+        "duty_point": _pump_duty_point(total_m3s, tdh, motor_kw),
         "schedules": schedules,
     }

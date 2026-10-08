@@ -55,3 +55,28 @@ def test_pipeline_includes_fea():
     assert "error" not in fea_block
     assert fea_block["max_displacement_mm"] > 0
     assert fea_block["max_stress_mpa"] > 0
+
+
+def test_axial_bar_matches_theory():
+    # Vertical bar, axial dead load: delta = P L / (E A)
+    props = shs_properties(100, 5)
+    L, P, E = 2.0, 50000.0, 200e9
+    expected_mm = P * L / (E * props["area_m2"]) * 1000.0
+    out = fea.solve_frame(
+        [{"from": [0, 0, 0], "to": [0, L, 0], "length_m": L}],
+        (100, 5), lateral_load_n=0.0, dead_load_n=P, load_height_m=L)
+    assert out["max_displacement_mm"] == pytest.approx(expected_mm, rel=0.02)
+
+
+def test_mesh_convergence():
+    # 1-element vs 4-element cantilever: same answer within 3%.
+    props = shs_properties(100, 5)
+    L, P = 4.0, 1000.0
+    one = fea.solve_frame([{"from": [0, 0, 0], "to": [0, L, 0], "length_m": L}],
+                          (100, 5), P, 0.0, L)
+    four = fea.solve_frame(
+        [{"from": [0, i, 0], "to": [0, i + 1, 0], "length_m": 1}
+         for i in range(4)],
+        (100, 5), P, 0.0, L)
+    assert four["max_displacement_mm"] == pytest.approx(
+        one["max_displacement_mm"], rel=0.03)

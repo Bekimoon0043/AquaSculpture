@@ -75,7 +75,8 @@ def illuminate(fixtures: list[dict], vertices, faces) -> dict:
     if not fixtures:
         return {"avg_lux": 0.0, "max_lux": 0.0, "coverage_pct": 0.0,
                 "min_lux_target": MIN_LUX, "wasted_fixtures": 0,
-                "hotspots": []}
+                "face_lux": [],
+                "hotspots": {"count": 0, "max_ratio": 0.0}}
     v = np.asarray(vertices, dtype=float)
     f = np.asarray(faces, dtype=int)
     tris = v[f]
@@ -106,6 +107,8 @@ def illuminate(fixtures: list[dict], vertices, faces) -> dict:
             wasted += 1
         lux += contribution
 
+    lit = lux[lux > 0]
+    hotspot_ratio = float(lit.max() / lit.mean()) if len(lit) else 0.0
     return {
         "avg_lux": round(float(lux.mean()), 1),
         "max_lux": round(float(lux.max()), 1),
@@ -113,7 +116,9 @@ def illuminate(fixtures: list[dict], vertices, faces) -> dict:
         "min_lux_target": MIN_LUX,
         "wasted_fixtures": wasted,
         "face_lux": [round(float(x), 1) for x in lux],  # heat-map overlay
-        "hotspots": [],  # per-fixture glare analysis later
+        # Glare screen: faces lit > 4x the lit-average read as hotspots.
+        "hotspots": {"count": int((lux > 4 * lit.mean()).sum()) if len(lit) else 0,
+                     "max_ratio": round(hotspot_ratio, 1)},
     }
 
 
@@ -156,8 +161,51 @@ def control_engineering(fixtures: list[dict], basin_meta: dict | None) -> dict:
 def design_lighting(brief: dict, geo: dict, vertices, faces,
                     basin_meta: dict | None) -> dict:
     fixtures = place_fixtures(brief, geo, basin_meta)
+    illum = illuminate(fixtures, vertices, faces)
+
+    # Auto-aim refinement (scope §12/§13): re-aim the least-useful fixture at
+    # the darkest surface region; keep it if coverage improves.
+    if fixtures and illum["coverage_pct"] < 80:
+        import numpy as np
+        v = np.asarray(vertices, dtype=float)
+        f = np.asarray(faces, dtype=int)
+        cents = v[f].mean(axis=1)
+        lux = np.asarray(illum["face_lux"])
+        dark = cents[lux < illum["min_lux_target"]]
+        if len(dark):
+            target = dark.mean(axis=0)
+            wasted_ids = []
+            for i, fx in enumerate(fixtures):
+                if _fixture_hit_share(fx, lux_min=illum["min_lux_target"],
+                                      cents=cents, v=v, f=f) < 0.01:
+                    wasted_ids.append(i)
+            if wasted_ids:
+                fx = fixtures[wasted_ids[0]]
+                fx["aim"] = _aim(fx["position"], target.tolist())
+                fx["auto_aimed"] = True
+                improved = illuminate(fixtures, vertices, faces)
+                if improved["coverage_pct"] > illum["coverage_pct"]:
+                    improved["auto_aim_note"] = (
+                        f"fixture {fx['id']} re-aimed at darkest region: "
+                        f"coverage {illum['coverage_pct']:.0f}% -> "
+                        f"{improved['coverage_pct']:.0f}%")
+                    illum = improved
+
     return {
         "fixtures": fixtures,
-        "illumination": illuminate(fixtures, vertices, faces),
+        "illumination": illum,
         "controls": control_engineering(fixtures, basin_meta),
     }
+
+
+def _fixture_hit_share(fx, lux_min, cents, v, f) -> float:
+    """Share of shell this fixture lights above the lux floor."""
+    import math
+    import numpy as np
+    spec = CATALOG[fx["catalog"]]
+    pos = np.asarray(fx["position"])
+    aim = np.asarray(fx["aim"])
+    dirs = cents - pos
+    dirs /= np.linalg.norm(dirs, axis=1, keepdims=True).clip(1e-9)
+    in_beam = (dirs @ aim) > math.cos(math.radians(spec["beam_angle_deg"] / 2))
+    return float(in_beam.mean())

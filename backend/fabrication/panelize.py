@@ -102,13 +102,23 @@ def panelize_shell(vertices, faces, shell_thickness_m: float = 0.003) -> dict:
         total_weld_m += seam_m
 
         # Flat pattern: PCA plane projection + convex hull outline.
+        # Single-curved panels additionally measure width as ARC LENGTH along
+        # the sorted principal direction (developable approximation — the
+        # pattern that actually fits when rolled, not the chord).
         pverts = np.unique(f[member].ravel())
         pts = v[pverts]
         centroid = pts.mean(axis=0)
         cov = np.cov((pts - centroid).T)
-        _, eigvecs = np.linalg.eigh(cov)
+        eigvals, eigvecs = np.linalg.eigh(cov)
         plane = eigvecs[:, 1:]                      # two largest axes
         proj = (pts - centroid) @ plane
+        if curvature == "single_curved":
+            order = np.argsort(proj[:, 0])
+            p_sorted = proj[order]
+            arc = np.concatenate(
+                [[0.0], np.cumsum(np.linalg.norm(np.diff(p_sorted, axis=0),
+                                                 axis=1))])
+            proj = np.stack([arc, p_sorted[:, 1]], axis=1)
         hull = _convex_hull_2d(proj)
         if len(hull) >= 2:
             dims = hull.max(axis=0) - hull.min(axis=0)

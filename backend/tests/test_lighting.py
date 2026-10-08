@@ -100,3 +100,12 @@ def test_face_lux_heatmap_present():
     illum = lighting.illuminate(fixtures, mesh["vertices"], mesh["faces"])
     assert len(illum["face_lux"]) == len(mesh["faces"])
     assert max(illum["face_lux"]) == pytest.approx(illum["max_lux"], abs=0.2)
+
+
+def test_auto_aim_and_hotspots():
+    mesh, geo = _ring()
+    out = lighting.design_lighting(BRIEF, geo, mesh["vertices"],
+                                   mesh["faces"], BASIN_META)
+    illum = out["illumination"]
+    assert isinstance(illum["hotspots"]["count"], int)
+    assert illum["hotspots"]["max_ratio"] >= 1.0

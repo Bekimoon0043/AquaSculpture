@@ -75,3 +75,12 @@ def test_splash_zone_grows_with_jet_height():
     r = hydraulics.compute_hydraulics(BRIEF, BASIN_META)
     bubbler = next(f for f in r["features"] if f["type"] == "bubbler_field")
     assert bubbler["splash_radius_m"] > 0.35
+
+
+def test_pump_duty_point():
+    r = hydraulics.compute_hydraulics(BRIEF, BASIN_META)
+    dp = r["duty_point"]
+    assert dp is not None
+    assert dp["duty_flow_lps"] >= r["total_flow_lps"]  # margin over demand
+    assert dp["shutoff_head_m"] > r["tdh_m"]
+    assert dp["duty_ok"] is True
