@@ -161,3 +161,60 @@ html, body, #root {
 .statusbar .dot.up { background: var(--ok); }
 .statusbar .dot.down { background: var(--danger); }
 .statusbar .spacer { flex: 1; }
+
+/* ── Live studio: KPI tiles, generated brief form, gate flash ───── */
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.panel-head h2 { margin: 0; }
+.btn.mini { height: 22px; padding: 1px 8px; font-size: 11px; }
+.btn.mini.active { color: var(--accent); border-color: var(--accent); }
+.stale { opacity: 0.72; transition: opacity 120ms; }
+
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px;
+  margin: 8px 0 4px;
+}
+.kpi {
+  background: var(--bg-raised); border: 1px solid var(--line-soft);
+  border-radius: 5px; padding: 5px 7px; display: flex; flex-direction: column;
+  gap: 1px; min-width: 0;
+}
+.kpi-label { font-size: 9.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi-value { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kpi-value small { font-size: 9.5px; color: var(--text-dim); margin-left: 3px; font-weight: 400; }
+.kpi-delta { font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.kpi-delta.up { color: var(--ok); }
+.kpi-delta.down { color: var(--warn); }
+.kpi-delta.neutral { color: var(--text-faint); }
+
+.brief-form { gap: 4px; }
+.form-section {
+  margin: 10px 0 2px; font-size: 10px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.form-section .hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.field { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
+.field-label { color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.field input[type="text"], .field input[type="number"], .field select {
+  background: var(--bg-input); color: var(--text);
+  border: 1px solid var(--border); border-radius: 5px;
+  padding: 3px 6px; font: inherit; font-size: 12px; height: 24px;
+  width: 128px; min-width: 0; font-variant-numeric: tabular-nums;
+}
+.field input:focus, .field select:focus { border-color: var(--accent); outline: none; }
+.field.check { justify-content: flex-start; cursor: pointer; }
+.field.check input { accent-color: var(--accent); }
+.field.param { flex-direction: column; align-items: stretch; gap: 2px; }
+.param-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.param-head input[type="number"] { width: 84px; height: 22px; }
+.field.param input[type="range"] { width: 100%; height: 14px; accent-color: var(--accent); margin: 0; }
+.feature-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.feature-row { display: flex; gap: 4px; align-items: center; }
+.feature-row select { flex: 1; min-width: 0; height: 24px; background: var(--bg-input); color: var(--text); border: 1px solid var(--border); border-radius: 5px; font-size: 11.5px; }
+.feature-row input[type="number"] { width: 48px; height: 24px; background: var(--bg-input); color: var(--text); border: 1px solid var(--border); border-radius: 5px; padding: 0 4px; font-size: 12px; }
+
+@keyframes gate-flash {
+  0% { box-shadow: 0 0 0 0 var(--accent); background: var(--accent); color: var(--accent-ink); }
+  100% { box-shadow: 0 0 0 8px transparent; background: transparent; }
+}
+.gate-flash { animation: gate-flash 1s ease-out 1; }

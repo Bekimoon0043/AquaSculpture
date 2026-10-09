@@ -10,6 +10,8 @@ import math
 
 import numpy as np
 
+PARAM_CHOICES = {"inner_shape": ("bird", "boat")}  # exposed to the UI parameter form
+
 from geometry.archetypes._common import combine_meshes, extrude_polygon, finalize
 from geometry.archetypes.open_ring import generate_open_ring
 

@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from geometry.archetypes import families_catalog
 from pipeline import generate_sculpture, geo_quantities
 
 router = APIRouter(prefix="/geometry", tags=["geometry"])
@@ -12,3 +13,10 @@ def generate_geometry(brief: dict):
     return {"mesh": {"vertices": result["vertices"], "faces": result["faces"]},
             "metadata": result["metadata"],
             "geo": geo_quantities(result)}
+
+
+@router.get("/families")
+def list_families():
+    """Family catalog with signature-derived parameter schemas (drives the
+    Brief form — sliders/ranges/choices come from the generators)."""
+    return {"families": families_catalog()}

@@ -107,3 +107,29 @@ def test_api_rejects_unsupported_family():
                            "family": "nonexistent_widget"}}
     resp = client.post("/api/geometry/generate", json=brief)
     assert resp.status_code == 400
+
+
+def test_families_catalog_lists_every_family_with_params():
+    from geometry.archetypes import GENERATORS, generate
+    resp = client.get("/api/geometry/families")
+    assert resp.status_code == 200
+    catalog = {f["family"]: f["params"] for f in resp.json()["families"]}
+    assert set(catalog) == set(GENERATORS) - {"stacked_c_rings"}
+    for family, params in catalog.items():
+        assert params, f"{family} exposes no parameters"
+        for p in params:
+            assert p["type"] in ("int", "float", "bool", "str")
+            if p["type"] in ("int", "float"):
+                assert p["min"] <= p["default"] <= p["max"], (family, p)
+        # Defaults from the catalog must round-trip through the generator.
+        defaults = {p["name"]: p["default"] for p in params}
+        mesh = generate(family, defaults, "stainless_316l", 3.0)
+        assert len(mesh["faces"]) > 0
+
+
+def test_families_catalog_exposes_enum_choices():
+    catalog = {f["family"]: {p["name"]: p for p in f["params"]}
+               for f in client.get("/api/geometry/families").json()["families"]}
+    assert catalog["ribbon_knot"]["preset"]["choices"] == ["figure_eight", "flame", "wave"]
+    assert catalog["crescent_inner"]["inner_shape"]["choices"] == ["bird", "boat"]
+    assert catalog["organic_flame"]["spill_lips"]["type"] == "bool"

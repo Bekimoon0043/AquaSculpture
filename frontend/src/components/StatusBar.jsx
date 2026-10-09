@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../config'
 import useBriefStore from '../store/briefStore'
 
 export default function StatusBar() {
-  const { engineering, status, backendUp, setBackendUp } = useBriefStore()
+  const { engineering, status, stale, lastRunMs, backendUp, setBackendUp } = useBriefStore()
 
   useEffect(() => {
     let alive = true
@@ -32,7 +32,8 @@ export default function StatusBar() {
       </span>
       <span>{verts.toLocaleString()} verts / {faces.toLocaleString()} faces</span>
       <span className="spacer" />
-      <span>{status === 'loading' ? 'Running engineering…' : status === 'error' ? 'Error' : 'Ready'}</span>
+      {lastRunMs != null && <span title="Last full engineering run">engineering {(lastRunMs / 1000).toFixed(1)} s</span>}
+      <span>{status === 'loading' ? 'Running engineering…' : stale ? 'Updating…' : status === 'error' ? 'Error' : 'Ready'}</span>
     </div>
   )
 }

@@ -1,3 +1,6 @@
+// Family labels + house defaults (portfolio-tuned). Parameter schemas —
+// types, ranges, choices — come from /api/geometry/families; these defaults
+// overlay the generator signature defaults (see briefStore.familyDefaults).
 export const FAMILIES = {
   open_ring: {
     label: 'Open Ring / Crescent',
@@ -17,6 +20,10 @@ export const FAMILIES = {
   },
   stacked_rings: {
     label: 'Stacked Rings (Totem)',
+    defaults: {},
+  },
+  stacked_c_rings: {
+    label: 'Stacked C-Rings (Fountain)',  // §3 brief alias of stacked_rings
     defaults: {},
   },
   crescent_inner: {

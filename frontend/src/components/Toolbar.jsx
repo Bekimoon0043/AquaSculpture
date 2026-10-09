@@ -2,7 +2,7 @@ import useBriefStore from '../store/briefStore'
 import { FAMILIES } from '../families'
 
 export default function Toolbar() {
-  const { family, setFamily, status, runGeneration } = useBriefStore()
+  const { family, setFamily, changeFamily, brief, status, runGeneration } = useBriefStore()
 
   return (
     <div className="toolbar">
@@ -16,7 +16,7 @@ export default function Toolbar() {
       <select
         id="family-select"
         value={family}
-        onChange={(e) => setFamily(e.target.value)}
+        onChange={(e) => (brief ? changeFamily : setFamily)(e.target.value)}
       >
         {Object.entries(FAMILIES).map(([key, f]) => (
           <option key={key} value={key}>{f.label}</option>

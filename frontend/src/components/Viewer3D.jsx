@@ -40,6 +40,7 @@ export default function Viewer3D() {
   const showWaterRef = useRef(true)
   showWaterRef.current = showWater
   const waterRef = useRef(null)   // animated water particle systems
+  const waterKeyRef = useRef(null) // JSON of the last water_viz built
   const clockRef = useRef(new THREE.Clock())
 
   useEffect(() => {
@@ -129,7 +130,11 @@ export default function Viewer3D() {
       })
       groupRef.current = null
     }
-    if (waterRef.current?.group) {
+    // Water FX only rebuild when the water payload actually changed — live
+    // parameter edits that leave the basin alone must not flicker the water.
+    const waterKey = engineering?.water_viz ? JSON.stringify(engineering.water_viz) : null
+    const waterChanged = waterKey !== waterKeyRef.current
+    if (waterChanged && waterRef.current?.group) {
       scene.remove(waterRef.current.group)
       waterRef.current.group.traverse?.((o) => {
         o.geometry?.dispose()
@@ -137,6 +142,7 @@ export default function Viewer3D() {
       })
       waterRef.current = null
     }
+    waterKeyRef.current = waterKey
     if (!engineering) return
 
     const group = new THREE.Group()
@@ -207,7 +213,7 @@ export default function Viewer3D() {
     // Water effects (scope §10) — AquaFlow-derived stack: tapered core
     // columns, breakup droplets, apex mist, impact foam, Gerstner surface.
     const viz = engineering.water_viz
-    if (viz) {
+    if (viz && waterChanged) {
       const fx = buildWaterFX(viz)
       fx.group.visible = showWaterRef.current
       scene.add(fx.group)

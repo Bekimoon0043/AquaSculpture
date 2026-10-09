@@ -13,6 +13,7 @@ import numpy as np
 from geometry.archetypes._common import finalize
 
 PRESETS = ("figure_eight", "flame", "wave")
+PARAM_CHOICES = {"preset": PRESETS}  # exposed to the UI parameter form
 
 
 def _centerline(preset: str, height_m: float, stations: int) -> np.ndarray:

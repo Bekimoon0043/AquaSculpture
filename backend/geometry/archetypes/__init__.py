@@ -1,6 +1,7 @@
 """Archetype registry: family name -> generator function (PLAN.md §5.1)."""
 
 import inspect
+import sys
 
 from geometry.archetypes.arc_fin_array import generate_arc_fin_array
 from geometry.archetypes.beyond import (generate_geodesic_shell,
@@ -60,3 +61,62 @@ def generate(family: str, params: dict, material: str, height_m: float) -> dict:
     if "material" in accepted:
         kwargs.setdefault("material", material)
     return GENERATORS[family](**kwargs)
+
+
+# ── Parameter metadata for generated UI forms (nTop/Grasshopper lesson:
+# the parameter chain is the product, so the form comes from the signature,
+# not from hand-written per-family UI). Ranges follow naming rules; a
+# generator may declare PARAM_CHOICES = {"name": (...)} for enum params.
+_HIDDEN = {"material", "shell_thickness_m", "elements", "outline"}
+_UNIT_INTERVAL = {"morph", "taper", "aspect_xy", "rib_amplitude"}
+_INT_NAMES = {"segments", "tube_segments", "radial_segments", "fin_segments",
+              "subdivisions", "p", "q", "waves", "turns"}
+
+
+def _range_for(name: str, default, is_int: bool) -> dict:
+    if name in _UNIT_INTERVAL:
+        return {"min": 0.0, "max": 1.0, "step": 0.01}
+    if name.endswith("_deg"):
+        return {"min": 0.0, "max": 360.0, "step": 1.0}
+    if is_int:
+        base = max(int(default or 1), 1)
+        if name.endswith("_count") or name in ("p", "q", "waves", "subdivisions"):
+            return {"min": 1, "max": max(4 * base, 8), "step": 1}
+        return {"min": max(base // 4, 3), "max": 4 * base, "step": 1}
+    d = float(default or 1.0)
+    if name.endswith("_m"):
+        return {"min": 0.01, "max": round(max(5.0 * d, 0.5), 2), "step": 0.01}
+    return {"min": 0.0, "max": round(max(4.0 * d, 1.0), 2), "step": 0.05}
+
+
+def param_meta(family: str) -> list[dict]:
+    """[{name, type, default, min, max, step, choices?}] for one family."""
+    fn = GENERATORS[family]
+    choices = getattr(sys.modules[fn.__module__], "PARAM_CHOICES", {})
+    out = []
+    for p in _SIGNATURES[family].parameters.values():
+        if p.name in _HIDDEN or p.default is inspect.Parameter.empty:
+            continue
+        d = p.default
+        if d is None:          # optional override (width_m/depth_m, plate dia)
+            continue
+        if isinstance(d, bool):
+            out.append({"name": p.name, "type": "bool", "default": d})
+        elif isinstance(d, str):
+            item = {"name": p.name, "type": "str", "default": d}
+            if p.name in choices:
+                item["choices"] = list(choices[p.name])
+            out.append(item)
+        elif isinstance(d, int) and (p.annotation is int or p.name in _INT_NAMES):
+            out.append({"name": p.name, "type": "int", "default": d,
+                        **_range_for(p.name, d, True)})
+        elif isinstance(d, (int, float)):
+            out.append({"name": p.name, "type": "float", "default": float(d),
+                        **_range_for(p.name, d, False)})
+    return out
+
+
+def families_catalog() -> list[dict]:
+    """Every registered family with its UI parameter schema."""
+    return [{"family": name, "params": param_meta(name)}
+            for name in GENERATORS if name != "stacked_c_rings"]

@@ -20,6 +20,8 @@ const GATE_PANEL = {  // gate id -> {side, tabIndex}
 export default function PipelineBar() {
   const gates = useBriefStore((s) => s.engineering?.gates)
   const setDockFocus = useBriefStore((s) => s.setDockFocus)
+  const changed = useBriefStore((s) => s.changedGates)
+  const runId = useBriefStore((s) => s.runId)
 
   return (
     <div style={styles.bar}>
@@ -30,7 +32,9 @@ export default function PipelineBar() {
                title={`${g.label}${g.note ? ' — ' + g.note : ''}`}
                onClick={() => target && setDockFocus({ ...target, t: Date.now() })}>
             {i > 0 && <span style={styles.link} />}
-            <span style={{ ...styles.glyph, ...glyphStyle(g.status) }}>
+            <span key={changed.includes(g.id) ? `${g.id}-${runId}` : g.id}
+                  className={changed.includes(g.id) ? 'gate-flash' : ''}
+                  style={{ ...styles.glyph, ...glyphStyle(g.status) }}>
               {g.id}
             </span>
             <span style={styles.text}>
