@@ -5,6 +5,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import useBriefStore from '../store/briefStore'
 import { buildWaterFX } from '../water/waterFX'
 import { viewerRef } from '../viewerRef'
+import FalseColorLegend, { ramp, STEPS } from './FalseColorLegend'
 
 function toMesh(mesh, material) {
   const geo = new THREE.BufferGeometry()
@@ -13,6 +14,43 @@ function toMesh(mesh, material) {
   geo.setIndex(mesh.faces.flat())
   geo.computeVertexNormals()
   return new THREE.Mesh(geo, material)
+}
+
+// Lux range for the false-colour overlay: 0 .. max(2x target, observed max),
+// so the code-minimum threshold always sits inside the bar.
+function luxRange(illum) {
+  const target = illum?.min_lux_target || 50
+  const maxLux = Math.max(...(illum?.face_lux || [0]), 1)
+  return { min: 0, max: Math.max(2 * target, maxLux), target }
+}
+
+// Per-vertex colours from per-face lux through the shared ramp.
+function luxColors(mesh, faceLux, range, steps) {
+  const vLux = new Float32Array(mesh.vertices.length)
+  const vCnt = new Float32Array(mesh.vertices.length)
+  mesh.faces.forEach((f, i) => {
+    for (const vi of f) { vLux[vi] += faceLux[i]; vCnt[vi] += 1 }
+  })
+  const colors = new Float32Array(mesh.vertices.length * 3)
+  for (let vi = 0; vi < mesh.vertices.length; vi++) {
+    const t = (vLux[vi] / (vCnt[vi] || 1) - range.min) / (range.max - range.min)
+    colors.set(ramp(t, steps), vi * 3)
+  }
+  return colors
+}
+
+// Deformed-shape line positions: node + displacement x exaggeration.
+function deformedPositions(fea, scale) {
+  const pos = []
+  for (const m of fea.member_results) {
+    for (const ni of m.nodes) {
+      const nd = fea.node_displacements[ni]
+      pos.push(nd.pos[0] + nd.d_mm[0] / 1000 * scale,
+               nd.pos[1] + nd.d_mm[1] / 1000 * scale,
+               nd.pos[2] + nd.d_mm[2] / 1000 * scale)
+    }
+  }
+  return new Float32Array(pos)
 }
 
 export default function Viewer3D() {
@@ -24,19 +62,28 @@ export default function Viewer3D() {
   const engineering = useBriefStore((s) => s.engineering)
   const [wireframe, setWireframe] = useState(false)
   const [showSkeleton, setShowSkeleton] = useState(false)
+  const [showStress, setShowStress] = useState(false)
+  const [deformScale, setDeformScale] = useState(50)
   const [showWater, setShowWater] = useState(true)
   const [night, setNight] = useState(false)
   const [showLux, setShowLux] = useState(false)
+  const [luxSteps, setLuxSteps] = useState(false)
   const [backdrop, setBackdrop] = useState(null)  // site photo URL
   const backdropRef = useRef(null)
   backdropRef.current = backdrop
   const showLuxRef = useRef(false)
   showLuxRef.current = showLux
+  const luxStepsRef = useRef(false)
+  luxStepsRef.current = luxSteps
   const nightRef = useRef(false)
   nightRef.current = night
   const sceneLightsRef = useRef(null)
   const showSkeletonRef = useRef(false)
   showSkeletonRef.current = showSkeleton
+  const showStressRef = useRef(false)
+  showStressRef.current = showStress
+  const deformScaleRef = useRef(50)
+  deformScaleRef.current = deformScale
   const showWaterRef = useRef(true)
   showWaterRef.current = showWater
   const waterRef = useRef(null)   // animated water particle systems
@@ -119,6 +166,7 @@ export default function Viewer3D() {
   }, [])
 
   // Swap in the real sculpture + basin meshes on new engineering results.
+  // The camera is deliberately left alone so live edits don't jump the view.
   useEffect(() => {
     const scene = sceneRef.current
     if (!scene) return
@@ -155,8 +203,9 @@ export default function Viewer3D() {
       envMapIntensity: 0.6, side: THREE.DoubleSide,
     })
 
+    const offset = engineering.sculpture_offset_m
     const sculpture = toMesh(engineering.sculpture.mesh, steel)
-    sculpture.position.y = engineering.sculpture_offset_m
+    sculpture.position.y = offset
     group.add(sculpture)
 
     if (engineering.basin) {
@@ -171,41 +220,71 @@ export default function Viewer3D() {
       })
       const skel = toMesh(engineering.skeleton.mesh, skelMat)
       skel.name = 'skeleton'
-      skel.position.y = engineering.sculpture_offset_m
-      skel.visible = showSkeletonRef.current
+      skel.position.y = offset
+      skel.visible = showSkeletonRef.current && !showStressRef.current
       group.add(skel)
+    }
+
+    // FEA results on the model (SkyCiv lesson): each frame element as a
+    // cylinder coloured by utilisation, plus the exaggerated deformed shape.
+    const fea = engineering.structural?.fea
+    if (fea?.member_results?.length) {
+      const side = parseInt((engineering.skeleton?.section || 'SHS 100').replace(/\D+/, ''), 10) || 100
+      const r = Math.min(0.12, Math.max(0.03, side / 2000 * 0.8))
+      const stress = new THREE.Group()
+      stress.name = 'stress'
+      const up = new THREE.Vector3(0, 1, 0)
+      const maxU = Math.max(1.2, ...fea.member_results.map((m) => m.utilization))
+      for (const m of fea.member_results) {
+        const from = new THREE.Vector3(...m.from), to = new THREE.Vector3(...m.to)
+        const dir = new THREE.Vector3().subVectors(to, from)
+        const len = dir.length()
+        if (len < 1e-6) continue
+        const geom = new THREE.CylinderGeometry(r, r, len, 8, 1)
+        const c = ramp(m.utilization / maxU)
+        const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({
+          color: new THREE.Color(c[0], c[1], c[2]), roughness: 0.6, metalness: 0.1,
+        }))
+        mesh.position.copy(from).addScaledVector(dir, 0.5)
+        mesh.quaternion.setFromUnitVectors(up, dir.normalize())
+        stress.add(mesh)
+      }
+      stress.position.y = offset
+      stress.visible = showStressRef.current
+      group.add(stress)
+
+      const lineGeo = new THREE.BufferGeometry()
+      lineGeo.setAttribute('position',
+        new THREE.BufferAttribute(deformedPositions(fea, deformScaleRef.current), 3))
+      const lines = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({
+        color: 0xffffff, transparent: true, opacity: 0.85,
+      }))
+      lines.name = 'deformed'
+      lines.position.y = offset
+      lines.visible = showStressRef.current
+      group.add(lines)
     }
 
     scene.add(group)
     groupRef.current = group
 
-    // Illumination heat-map overlay (scope §13): shell faces colored by lux.
-    const faceLux = engineering.lighting?.illumination?.face_lux
+    // Illumination heat-map overlay (scope §13): shell faces coloured by lux
+    // through the shared false-colour ramp (same legend as the stress view).
+    const illum = engineering.lighting?.illumination
+    const faceLux = illum?.face_lux
     if (faceLux && faceLux.length === engineering.sculpture.mesh.faces.length) {
       const mesh = engineering.sculpture.mesh
       const geoL = new THREE.BufferGeometry()
       geoL.setAttribute('position',
         new THREE.Float32BufferAttribute(mesh.vertices.flat(), 3))
       geoL.setIndex(mesh.faces.flat())
-      // Average face lux onto vertices, map to a blue->red ramp.
-      const vLux = new Float32Array(mesh.vertices.length)
-      const vCnt = new Float32Array(mesh.vertices.length)
-      mesh.faces.forEach((f, i) => {
-        for (const vi of f) { vLux[vi] += faceLux[i]; vCnt[vi] += 1 }
-      })
-      const colors = new Float32Array(mesh.vertices.length * 3)
-      const maxLux = Math.max(...faceLux, 1)
-      for (let vi = 0; vi < mesh.vertices.length; vi++) {
-        const t = Math.min(vLux[vi] / (vCnt[vi] || 1) / (maxLux * 0.8), 1)
-        const c = new THREE.Color().setHSL(0.63 * (1 - t), 0.9, 0.5)
-        colors.set([c.r, c.g, c.b], vi * 3)
-      }
-      geoL.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+      geoL.setAttribute('color', new THREE.BufferAttribute(
+        luxColors(mesh, faceLux, luxRange(illum), luxStepsRef.current ? STEPS : 0), 3))
       const luxMesh = new THREE.Mesh(geoL, new THREE.MeshBasicMaterial({
         vertexColors: true, transparent: true, opacity: 0.85,
       }))
       luxMesh.name = 'luxmap'
-      luxMesh.position.y = engineering.sculpture_offset_m + 0.005
+      luxMesh.position.y = offset + 0.005
       luxMesh.visible = showLuxRef.current
       group.add(luxMesh)
     }
@@ -224,26 +303,51 @@ export default function Viewer3D() {
   // Wireframe toggle applies to everything in the current model group.
   useEffect(() => {
     groupRef.current?.traverse((o) => {
-      if (o.material && o.name !== 'skeleton') o.material.wireframe = wireframe
+      if (o.material && !['skeleton', 'deformed'].includes(o.name) && o.parent?.name !== 'stress') {
+        o.material.wireframe = wireframe
+      }
     })
   }, [wireframe, engineering])
 
-  // Skeleton x-ray visibility.
+  // Skeleton x-ray / stress overlay visibility (stress replaces the x-ray).
   useEffect(() => {
-    const skel = groupRef.current?.getObjectByName('skeleton')
-    if (skel) skel.visible = showSkeleton
-  }, [showSkeleton, engineering])
+    const g = groupRef.current
+    if (!g) return
+    const skel = g.getObjectByName('skeleton')
+    if (skel) skel.visible = showSkeleton && !showStress
+    const st = g.getObjectByName('stress')
+    if (st) st.visible = showStress
+    const d = g.getObjectByName('deformed')
+    if (d) d.visible = showStress
+  }, [showSkeleton, showStress, engineering])
+
+  // Deformation exaggeration slider rebuilds the deformed-shape lines.
+  useEffect(() => {
+    const d = groupRef.current?.getObjectByName('deformed')
+    const fea = engineering?.structural?.fea
+    if (!d || !fea?.member_results) return
+    d.geometry.setAttribute('position',
+      new THREE.BufferAttribute(deformedPositions(fea, deformScale), 3))
+    d.geometry.attributes.position.needsUpdate = true
+  }, [deformScale, engineering])
 
   // Water visibility toggle.
   useEffect(() => {
     if (waterRef.current?.group) waterRef.current.group.visible = showWater
   }, [showWater, engineering])
 
-  // Lux heat-map visibility.
+  // Lux heat-map visibility + soft/hard-step recolour.
   useEffect(() => {
     const lm = groupRef.current?.getObjectByName('luxmap')
-    if (lm) lm.visible = showLux
-  }, [showLux, engineering])
+    if (!lm) return
+    lm.visible = showLux
+    const illum = engineering?.lighting?.illumination
+    if (illum?.face_lux) {
+      lm.geometry.setAttribute('color', new THREE.BufferAttribute(
+        luxColors(engineering.sculpture.mesh, illum.face_lux, luxRange(illum),
+                  luxSteps ? STEPS : 0), 3))
+    }
+  }, [showLux, luxSteps, engineering])
 
   // Site photo backdrop (scope §30 site integration).
   useEffect(() => {
@@ -304,6 +408,10 @@ export default function Viewer3D() {
   }
 
   const size = engineering?.geo_quantities?.bounding_box?.size
+  const illum = engineering?.lighting?.illumination
+  const fea = engineering?.structural?.fea
+  const lr = illum ? luxRange(illum) : null
+  const maxU = fea?.member_results ? Math.max(1.2, ...fea.member_results.map((m) => m.utilization)) : 1.2
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -329,6 +437,14 @@ export default function Viewer3D() {
           Skeleton
         </button>
         <button
+          className={`btn ${showStress ? 'active' : ''}`}
+          onClick={() => setShowStress((s) => !s)}
+          disabled={!fea?.member_results?.length}
+          title="FEA results on the frame: member utilisation (1.5σ / fy) and exaggerated deformed shape"
+        >
+          Stress
+        </button>
+        <button
           className={`btn ${showWater ? 'active' : ''}`}
           onClick={() => setShowWater((w) => !w)}
           disabled={!engineering?.water_viz}
@@ -346,7 +462,7 @@ export default function Viewer3D() {
         <button
           className={`btn ${showLux ? 'active' : ''}`}
           onClick={() => setShowLux((l) => !l)}
-          disabled={!engineering?.lighting?.illumination?.face_lux}
+          disabled={!illum?.face_lux?.length}
           title="Illumination heat map (lux on shell)"
         >
           Lux
@@ -370,6 +486,28 @@ export default function Viewer3D() {
           {size.map((v) => v.toFixed(2)).join(' × ')} m
         </div>
       )}
+      {(showLux && lr) || (showStress && fea?.member_results) ? (
+        <div className="view-legends">
+          {showLux && lr && (
+            <FalseColorLegend label="Illuminance" unit="lux" min={lr.min} max={lr.max}
+                              threshold={lr.target} thresholdLabel="min"
+                              steps={luxSteps} onToggleSteps={() => setLuxSteps((s) => !s)}>
+              <div className="hint">{illum.coverage_pct}% of shell ≥ {lr.target} lux · avg {illum.avg_lux}</div>
+            </FalseColorLegend>
+          )}
+          {showStress && fea?.member_results && (
+            <FalseColorLegend label="Member utilisation" unit="" min={0} max={maxU}
+                              threshold={1.0} thresholdLabel="yield">
+              <div className="hint">{fea.section} · σmax {fea.max_stress_mpa} MPa · δmax {fea.max_displacement_mm} mm · {fea.passed ? 'PASS' : 'FAIL'}</div>
+              <label className="legend-row">
+                <span>deform ×{deformScale}</span>
+                <input type="range" min={1} max={200} step={1} value={deformScale}
+                       onChange={(e) => setDeformScale(+e.target.value)} />
+              </label>
+            </FalseColorLegend>
+          )}
+        </div>
+      ) : null}
     </div>
   )
 }

@@ -19,7 +19,9 @@ python main.py
 ```
 
 API at http://localhost:8100 — `GET /api/health`, `GET /api/brief/example`,
-`POST /api/brief/validate`, `POST /api/geometry/generate`,
+`POST /api/brief/validate`, `GET /api/geometry/families` (parameter schemas),
+`POST /api/geometry/generate`, `POST /api/ai/interpret` + `/api/ai/refine`
+(prompt → brief, then conversational edits with a change diff),
 `POST /api/engineering/run` (brief → geometry + hydraulics + cost),
 `POST /api/deliverables/package` (ZIP with STL/GLB/PDF/XLSX + manifest),
 project save/load under `/api/project/`. Interactive docs at `/docs`.

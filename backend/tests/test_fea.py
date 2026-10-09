@@ -80,3 +80,20 @@ def test_mesh_convergence():
         (100, 5), P, 0.0, L)
     assert four["max_displacement_mm"] == pytest.approx(
         one["max_displacement_mm"], rel=0.03)
+
+
+def test_per_element_results_and_displacements_are_exposed():
+    L = 3.0
+    out = fea.solve_frame(
+        [{"from": [0, 0, 0], "to": [0, L, 0], "length_m": L}],
+        (100, 5), lateral_load_n=1000.0, dead_load_n=0.0, load_height_m=L)
+    assert len(out["member_results"]) == out["elements"]
+    assert len(out["node_displacements"]) == out["nodes"]
+    worst = max(m["stress_mpa"] for m in out["member_results"])
+    assert worst == out["max_stress_mpa"]
+    m = out["member_results"][0]
+    assert m["nodes"] == [0, 1] and m["from"] == [0, 0, 0] and m["to"] == [0, L, 0]
+    assert m["utilization"] == round(m["stress_mpa"] * 1.5 / 250.0, 3)
+    tip = max(out["node_displacements"], key=lambda d: d["pos"][1])
+    assert abs(tip["d_mm"][0]) > 0            # lateral load -> x displacement
+    assert tip["d_mm"][0] <= out["max_displacement_mm"] + 1e-6

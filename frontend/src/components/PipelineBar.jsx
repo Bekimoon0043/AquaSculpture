@@ -9,12 +9,12 @@ const GATE_PANEL = {  // gate id -> {side, tabIndex}
   G2: { side: 'right', tab: 0 },  // Geometry -> Engineering
   G3: { side: 'right', tab: 0 },
   G4: { side: 'right', tab: 0 },
-  G5: { side: 'right', tab: 0 },
+  G5: { side: 'right', tab: 1 },  // Hydraulic -> Water
   G6: { side: 'right', tab: 0 },
   G7: { side: 'right', tab: 0 },
   G8: { side: 'right', tab: 0 },
-  G9: { side: 'right', tab: 1 },  // Cost
-  G10: { side: 'right', tab: 3 }, // Package -> Export
+  G9: { side: 'right', tab: 2 },  // Cost
+  G10: { side: 'right', tab: 4 }, // Package -> Export
 }
 
 export default function PipelineBar() {

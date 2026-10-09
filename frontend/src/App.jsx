@@ -13,6 +13,7 @@ import TimelinePanel from './components/TimelinePanel'
 import CopilotPanel from './components/CopilotPanel'
 import ConceptsPanel from './components/ConceptsPanel'
 import ExportPanel from './components/ExportPanel'
+import HydraulicsPanel from './components/HydraulicsPanel'
 
 export default function App() {
   const dockFocus = useBriefStore((s) => s.dockFocus)
@@ -48,6 +49,7 @@ export default function App() {
           focus={rightFocus}
           tabs={[
             { label: 'Engineering', node: <EngineeringPanel /> },
+            { label: 'Water', node: <HydraulicsPanel /> },
             { label: 'Cost', node: <CostPanel /> },
             { label: 'Show', node: <TimelinePanel /> },
             { label: 'Export', node: <ExportPanel /> },

@@ -12,6 +12,7 @@ import numpy as np
 
 from fabrication.skeleton import shs_properties
 
+YIELD_PA = 250.0e6  # S275-class design yield used by the G4 check
 STEEL_E = 200e9
 STEEL_G = 77e9
 
@@ -153,8 +154,9 @@ def solve_frame(members: list[dict], section: tuple[int, int],
     disp = u.reshape(n, 6)[:, :3]
     max_disp = float(np.linalg.norm(disp, axis=1).max())
 
-    # Member end forces (local) -> worst stress.
+    # Member end forces (local) -> stress per element (+ worst).
     worst = 0.0
+    member_results: list[dict] = []
     for a, b in elements:
         R, L = _rotation(nodes[a], nodes[b])
         if L < 1e-6:
@@ -170,7 +172,22 @@ def solve_frame(members: list[dict], section: tuple[int, int],
                      abs(f_local[10]), abs(f_local[11]))
         z = shs_properties(*section)["z_m3"]
         bending = moment / z
-        worst = max(worst, axial + bending)
+        stress = axial + bending
+        worst = max(worst, stress)
+        member_results.append({
+            "nodes": [int(a), int(b)],
+            "from": [round(float(x), 4) for x in np.asarray(nodes[a])],
+            "to": [round(float(x), 4) for x in np.asarray(nodes[b])],
+            "stress_mpa": round(float(stress) / 1e6, 2),
+            # utilization = factored stress / yield (1.5 x sigma / 250 MPa)
+            "utilization": round(float(stress) * 1.5 / YIELD_PA, 3),
+        })
+
+    node_displacements = [
+        {"pos": [round(float(x), 4) for x in np.asarray(nodes[i])],
+         "d_mm": [round(float(x) * 1000.0, 3) for x in disp[i]]}
+        for i in range(n)
+    ]
 
     return {
         "nodes": int(n),
@@ -182,4 +199,6 @@ def solve_frame(members: list[dict], section: tuple[int, int],
             np.linalg.norm([reactions[d] for i in fixed
                             for d in (6 * i, 6 * i + 1, 6 * i + 2)]).sum()), 3),
         "model": "3D Euler-Bernoulli frame, direct stiffness",
+        "member_results": member_results,
+        "node_displacements": node_displacements,
     }

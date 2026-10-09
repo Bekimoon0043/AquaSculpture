@@ -43,13 +43,22 @@ Updated: initial build (Phases 0–2 + first figurative archetype).
 | Gate | Status |
 |------|--------|
 | G0 Brief Complete | ✅ schema-validated briefs |
-| G1 Concept Approved | ⚠️ single concept, manual approval |
+| G1 Concept Approved | ✅ human sign-off recorded in brief.approvals (Concepts tab) |
 | G2 Geometry Valid | ✅ live mesh forensics gate |
 | G3 Material Valid | ✅ live (materials DB check) |
 | G4 Structural PASS | ✅ live (safety-factor verdict) |
 | G5 Hydraulic PASS | ✅ live (flow consistency) |
 | G9 Cost PASS | ✅ live (budget check) |
-| G1, G6–G8, G10 | ⏳ report as not_evaluated until subsystems exist |
+| G6–G8 | ✅ live (lighting, fabrication/routing, maintainability) |
+| G10 Production Package Approved | ✅ human sign-off (Export tab); void automatically if any engineering gate fails |
+
+## UI (learned from Forma/TestFit, Zookeeper/Meshy, Fusion GD, nTop, DIALux, SkyCiv, Depence, Onshape)
+
+- Live studio: every brief edit re-runs engineering (350 ms debounce, latest-wins); KPI tiles with deltas; gate bar flashes changed gates
+- Brief form generated from generator signatures (`GET /api/geometry/families`)
+- Conversational prompt console: interpretation echo, before→after change list, `/api/ai/refine`, P1–P9 portfolio chips
+- Concept explorer: cost×weight scatter, two-up compare, Pareto overlay, G1 approval
+- Trust overlays: shared false-colour legend (lux with code-minimum line; member utilisation with yield line + deformed shape), Water tab hydraulic schematic, calculation sheets in the PDF
 
 ## Near-term priorities (highest weight × lowest score)
 

@@ -203,6 +203,9 @@ def engineering_report_pages(brief: dict, sculpture_meta: dict, geo: dict,
             (structural["disclaimer"], 10),
         ])
 
+    if structural:
+        pages.extend(calculation_sheet_pages(geo, hydraulics, structural))
+
     pages.append(cost_page)
 
     # Quotation (scope §24): production cost AND client-facing quotation.
@@ -247,3 +250,120 @@ def engineering_report_pages(brief: dict, sculpture_meta: dict, geo: dict,
         pages.append(page)
 
     return pages
+
+
+
+def calculation_sheet_pages(geo: dict, hydraulics: dict,
+                            structural: dict) -> list[list[tuple[str, int]]]:
+    """Hand-calculation sheet (SkyCiv lesson): every headline number with its
+    formula, the substituted values and the standard it leans on, so a
+    reviewing engineer can check the arithmetic line by line."""
+    H = geo["bounding_box"]["size"][1]
+    V = structural["wind_speed_ms"]
+    q = structural["velocity_pressure_pa"]
+    G = structural["gust_factor"]
+    Cd = structural["drag_coefficient"]
+    A = structural["projected_area_m2"]
+    phi = structural["solidity"]
+    A_eff = structural["effective_area_m2"]
+    F = structural["wind_force_kn"]
+    M = structural["overturning_moment_knm"]
+    z = M / F if F else 0.0
+    sf = structural["safety_factors"]
+    ana = structural["analysis"]
+    loads = structural["loads"]
+    fea = structural.get("fea") or {}
+
+    struct = [
+        ("Calculation sheet 1/2 — structural", 16),
+        ("Values as computed by the engine; preliminary, for licensed review.", 10),
+        ("", 6),
+        ("1. Velocity pressure (EN 1991-1-4 §4.5, rho = 1.226 kg/m3)", 12),
+        ("   q = 0.613 x V^2", 11),
+        (f"   q = 0.613 x {V:.1f}^2 = {q:.1f} Pa", 11),
+        ("", 4),
+        ("2. Effective (solid) projected area", 12),
+        ("   A_eff = A_proj x phi", 11),
+        (f"   A_eff = {A:.3f} x {phi:.2f} = {A_eff:.3f} m2", 11),
+        ("", 4),
+        ("3. Wind force (ASCE 7-22 Ch.29 / EN 1991-1-4 §5.3 form)", 12),
+        ("   F = q x G x Cd x A_eff", 11),
+        (f"   F = {q:.1f} x {G:.2f} x {Cd:.2f} x {A_eff:.3f} / 1000 = {F:.2f} kN", 11),
+        ("", 4),
+        ("4. Overturning moment about the base", 12),
+        ("   M = F x z   (z = height of the wind resultant)", 11),
+        (f"   M = {F:.2f} x {z:.2f} = {M:.2f} kNm", 11),
+        (f"   plus jet reaction {loads['jet_reaction_kn']:.2f} kN and seismic "
+         f"{loads['seismic_kn']:.2f} kN -> total base moment "
+         f"{structural['total_base_moment_knm']:.2f} kNm", 11),
+        ("", 4),
+        ("5. Stability safety factors (required >= "
+         f"{sf['required']})", 12),
+        ("   SF_overturning = M_resist / M_overturning", 11),
+        (f"   M_resist = {sf['overturning']} x {M:.2f} = "
+         f"{(sf['overturning'] or 0) * M:.2f} kNm  ->  SF = {sf['overturning']}"
+         f"{'  (anchored to foundation)' if sf.get('anchored') else ''}", 11),
+        (f"   SF_sliding = {sf['sliding']}, SF_anchor = {sf['anchor_tension']}, "
+         f"SF_buckling = {sf['buckling']}, SF_yield = {sf['yield']}", 11),
+        ("", 4),
+        ("6. Serviceability", 12),
+        ("   delta_limit = H / 100", 11),
+        (f"   delta_limit = {H * 1000:.0f} / 100 = {ana['deflection_limit_mm']:.1f} mm; "
+         f"delta = {ana['deflection_mm']:.1f} mm  ->  "
+         f"{'OK' if ana['deflection_mm'] <= ana['deflection_limit_mm'] else 'EXCEEDED'}", 11),
+    ]
+    if fea and "max_stress_mpa" in fea:
+        struct += [
+            ("", 4),
+            ("7. Frame FEA check (direct stiffness, 12-DOF beams)", 12),
+            ("   1.5 x sigma_max <= f_y = 250 MPa", 11),
+            (f"   1.5 x {fea['max_stress_mpa']:.1f} = {1.5 * fea['max_stress_mpa']:.1f} MPa "
+             f"-> {'OK' if fea.get('stress_ok') else 'FAIL'} ({fea.get('section', '')}); "
+             f"max displacement {fea['max_displacement_mm']:.1f} mm", 11),
+        ]
+
+    Q = hydraulics["total_flow_lps"] / 1000.0
+    tdh = hydraulics["tdh_m"]
+    Ph = hydraulics["pump_hydraulic_kw"]
+    eta = hydraulics["pump_efficiency"]
+    hyd = [
+        ("Calculation sheet 2/2 — hydraulics", 16),
+        ("", 6),
+        ("1. Total dynamic head", 12),
+        ("   TDH = H_static + h_f,main + h_branch,worst + h_nozzle", 11),
+        (f"   TDH = {hydraulics['static_lift_m']:.2f} + {hydraulics['friction_head_m']:.2f} + "
+         f"{hydraulics.get('worst_branch_loss_m', 0):.2f} + "
+         f"{hydraulics['nozzle_pressure_head_m']:.2f} = {tdh:.2f} m", 11),
+        ("   (pipe friction by Hazen-Williams; fittings as K x v^2/2g)", 10),
+        ("", 4),
+        ("2. Hydraulic power", 12),
+        ("   P_h = rho x g x Q x TDH", 11),
+        (f"   P_h = 1000 x 9.81 x {Q:.4f} x {tdh:.2f} / 1000 = {Ph:.2f} kW", 11),
+        ("", 4),
+        ("3. Motor power", 12),
+        ("   P_m = P_h / eta_pump", 11),
+        (f"   P_m = {Ph:.2f} / {eta:.2f} = {hydraulics['motor_kw']:.2f} kW", 11),
+    ]
+    mp = hydraulics.get("main_pipe")
+    if mp:
+        import math
+        area = math.pi * mp["inner_d_m"] ** 2 / 4.0
+        hyd += [
+            ("", 4),
+            ("4. Main pipe velocity (target 1.5-2.5 m/s)", 12),
+            ("   v = Q / (pi x d^2 / 4)", 11),
+            (f"   v = {Q:.4f} / (pi x {mp['inner_d_m']:.3f}^2 / 4) = "
+             f"{Q / area:.2f} m/s  (DN{mp['dn']})", 11),
+        ]
+    for feat in hydraulics["features"]:
+        if feat.get("jet_height_m") and feat.get("exit_velocity_ms"):
+            v0 = feat["exit_velocity_ms"]
+            hyd += [
+                ("", 4),
+                (f"5. Jet height — {feat['type']}", 12),
+                ("   h = v0^2 / (2 g)  (ballistic, before drag)", 11),
+                (f"   h = {v0:.2f}^2 / 19.62 = {v0 ** 2 / 19.62:.2f} m "
+                 f"(engine, with drag: {feat['jet_height_m']:.2f} m)", 11),
+            ]
+            break
+    return [struct, hyd]

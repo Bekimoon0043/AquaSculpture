@@ -124,3 +124,27 @@ def test_iges_wireframe():
     assert lines[0][72] == "S"
     assert any(l[72] == "T" for l in lines)
     assert text.count("110,") > 100               # line entities
+
+
+def test_report_carries_calculation_sheets():
+    from fastapi.testclient import TestClient
+    from api.routes.brief import EXAMPLE_BRIEF
+    from main import app
+    c = TestClient(app)
+    brief = {**EXAMPLE_BRIEF,
+             "sculpture": {**EXAMPLE_BRIEF["sculpture"], "family": "open_ring",
+                           "parameters": {"diameter_m": 4.0, "tube_radius_m": 0.15,
+                                          "opening_deg": 90, "segments": 24}}}
+    r = c.post("/api/engineering/run", json=brief).json()
+    pages = report.engineering_report_pages(
+        brief, r["sculpture"]["metadata"], r["geo_quantities"],
+        r["basin"]["metadata"], r["hydraulics"], r["cost"],
+        structural=r["structural"], lighting=r["lighting"])
+    text = "\n".join(line for page in pages for line, _ in page)
+    assert "Calculation sheet 1/2" in text and "Calculation sheet 2/2" in text
+    s = r["structural"]
+    assert f"q = 0.613 x {s['wind_speed_ms']:.1f}^2 = {s['velocity_pressure_pa']:.1f} Pa" in text
+    assert "TDH = H_static + h_f,main" in text
+    assert f"= {r['hydraulics']['motor_kw']:.2f} kW" in text
+    pdf = report.build_pdf(pages)
+    assert b"Calculation sheet" in pdf
