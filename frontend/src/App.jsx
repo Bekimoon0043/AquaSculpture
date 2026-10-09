@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+import useBriefStore from './store/briefStore'
 import Toolbar from './components/Toolbar'
 import PipelineBar from './components/PipelineBar'
 import Dock from './components/Dock'
@@ -13,6 +15,16 @@ import ConceptsPanel from './components/ConceptsPanel'
 import ExportPanel from './components/ExportPanel'
 
 export default function App() {
+  const dockFocus = useBriefStore((s) => s.dockFocus)
+  const [leftFocus, setLeftFocus] = useState(null)
+  const [rightFocus, setRightFocus] = useState(null)
+
+  useEffect(() => {
+    if (!dockFocus) return
+    if (dockFocus.side === 'left') setLeftFocus(dockFocus.tab)
+    else setRightFocus(dockFocus.tab)
+  }, [dockFocus])
+
   return (
     <div className="app-shell">
       <Toolbar />
@@ -20,6 +32,7 @@ export default function App() {
       <div className="app-main">
         <Dock
           side="left"
+          focus={leftFocus}
           tabs={[
             { label: 'Prompt', node: <PromptConsole /> },
             { label: 'Brief', node: <BriefEditor /> },
@@ -32,6 +45,7 @@ export default function App() {
         </div>
         <Dock
           side="right"
+          focus={rightFocus}
           tabs={[
             { label: 'Engineering', node: <EngineeringPanel /> },
             { label: 'Cost', node: <CostPanel /> },

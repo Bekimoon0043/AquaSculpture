@@ -1,29 +1,34 @@
 import { useState } from 'react'
 import { API_BASE_URL } from '../config'
 import useBriefStore from '../store/briefStore'
+import { viewerRef } from '../viewerRef'
+
+function download(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 export default function ExportPanel() {
   const brief = useBriefStore((s) => s.brief)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const project = (brief?.project?.name || 'aquasculptor').replace(/\s+/g, '_')
 
-  async function handleDownload() {
+  async function post(endpoint, filename) {
     setBusy(true)
     setError(null)
     try {
-      const resp = await fetch(`${API_BASE_URL}/api/deliverables/package`, {
+      const resp = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(brief),
       })
-      if (!resp.ok) throw new Error(`package failed: ${resp.status}`)
-      const blob = await resp.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${(brief?.project?.name || 'sculptflow').replace(/\s+/g, '_')}_package.zip`
-      a.click()
-      URL.revokeObjectURL(url)
+      if (!resp.ok) throw new Error(`${endpoint} failed: ${resp.status}`)
+      download(await resp.blob(), filename)
     } catch (e) {
       setError(e.message)
     } finally {
@@ -31,25 +36,33 @@ export default function ExportPanel() {
     }
   }
 
+  function snapshot() {
+    const canvas = viewerRef.canvas
+    if (!canvas) return setError('viewport not ready')
+    canvas.toBlob((blob) => download(blob, `${project}_render.png`), 'image/png')
+  }
+
   return (
-    <div style={styles.panel}>
-      <h2 style={styles.heading}>Export</h2>
-      <button style={styles.button} onClick={handleDownload} disabled={!brief || busy}>
-        {busy ? 'Packaging…' : 'Download package (ZIP)'}
+    <div className="panel">
+      <h2>Export</h2>
+      <button className="btn primary" disabled={!brief || busy}
+              onClick={() => post('/api/deliverables/package', `${project}_package.zip`)}>
+        {busy ? 'Packaging…' : 'Engineering package (ZIP)'}
       </button>
-      {error && <p style={styles.error}>{error}</p>}
-      <p style={styles.hint}>STL + GLB + PDF report + XLSX BOM + brief + SHA-256 manifest.</p>
+      <p className="hint">
+        brief · STL · GLB · STEP · IGES · panels.dxf · GA + foundation drawings ·
+        BOM/BOQ · PDF report + quotation · SHA-256 manifest
+      </p>
+      <button className="btn" disabled={!brief || busy}
+              onClick={() => post('/api/integration/aquaflow', `${project}.luxexchange.json`)}>
+        AquaFlow exchange (LUXEXCHANGE)
+      </button>
+      <p className="hint">Fixtures, DMX patch, devices, show program for AquaFlow.</p>
+      <button className="btn" onClick={snapshot}>
+        Viewport snapshot (PNG)
+      </button>
+      <p className="hint">Client-presentation render of the current view.</p>
+      {error && <p className="error">{error}</p>}
     </div>
   )
-}
-
-const styles = {
-  panel: { padding: '12px' },
-  heading: { margin: '0 0 8px', fontSize: '14px', color: '#ccc', textTransform: 'uppercase' },
-  button: {
-    background: '#2e9e5b', color: '#fff', border: 'none', borderRadius: '4px',
-    padding: '8px 16px', cursor: 'pointer', fontWeight: 600,
-  },
-  error: { color: '#ff6b6b', fontSize: '13px' },
-  hint: { color: '#666', fontSize: '12px' },
 }

@@ -1,10 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // Collapsible tabbed dock (Blender/C4D idiom): tabs on top, one panel
 // visible at a time, whole dock collapses to a strip to free the viewport.
-export default function Dock({ side, tabs }) {
+export default function Dock({ side, tabs, focus = 0 }) {
   const [active, setActive] = useState(0)
   const [collapsed, setCollapsed] = useState(false)
+
+  // Gate-bar click-through: external focus request opens this tab.
+  useEffect(() => {
+    if (focus != null) {
+      setActive(focus)
+      setCollapsed(false)
+    }
+  }, [focus])
 
   if (collapsed) {
     return (

@@ -12,6 +12,8 @@ const useBriefStore = create((set, get) => ({
   family: 'open_ring',
   show: [],          // light show segments (scope §14); empty = backend default
   backendUp: null,   // null = unknown, true/false after health ping
+  dockFocus: null,   // {side, index} — gate bar click-through
+  setDockFocus: (dockFocus) => set({ dockFocus }),
   setFamily: (family) => set({ family }),
   setBrief: (brief) => set({ brief }),
   setShow: (show) => set({ show }),

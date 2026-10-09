@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import useBriefStore from '../store/briefStore'
 import { buildWaterFX } from '../water/waterFX'
+import { viewerRef } from '../viewerRef'
 
 function toMesh(mesh, material) {
   const geo = new THREE.BufferGeometry()
@@ -53,12 +54,14 @@ export default function Viewer3D() {
     camera.position.set(6, 4, 8)
     cameraRef.current = camera
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true })
+    const renderer = new THREE.WebGLRenderer({ antialias: true,
+                                               preserveDrawingBuffer: true })
     renderer.setSize(mount.clientWidth, mount.clientHeight)
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.1
     mount.appendChild(renderer.domElement)
+    viewerRef.canvas = renderer.domElement
 
     // Environment map — metal surfaces only show what they reflect,
     // so without this mirror-polished steel renders almost black.
