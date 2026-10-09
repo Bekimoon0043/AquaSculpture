@@ -27,6 +27,8 @@ IMPLEMENTED_FAMILIES = (
     "open_ring", "crescent_inner", "ribbon_knot", "organic_flame",
     "stacked_rings", "stacked_c_rings", "twisted_torus",
     "arc_fin_array", "relief_panel", "buddha_seated",
+    "torus_knot", "mobius_ribbon", "wave_surface", "spiral_column",
+    "geodesic_shell",
 )
 
 SYSTEM_PROMPT = """You are the design interpreter for AquaSculptor, a sculpture + fountain design tool.
@@ -58,6 +60,11 @@ IMPLEMENTED_FAMILIES (choose ONLY from these) with typical parameters:
 - arc_fin_array: radial array of curved tapered fins (landmark entrances). params: fin_count, height_m, arc_radius_m, layout_diameter_m, base_width_m, tip_width_m
 - relief_panel: silhouette relief panel (maps, logos) with optional LED perforation grid. params: thickness_m, perforation_dot_spacing_m
 - buddha_seated: seated Buddha in meditation pose on lotus pedestal (figurative). params: height_m, pedestal (bool)
+- torus_knot: mathematical knot sculpture. params: p, q, major_radius_m, tube_radius_m
+- mobius_ribbon: möbius strip with thickness. params: radius_m, width_m, thickness_m
+- wave_surface: undulating ribbon wall. params: width_m, height_m, waves, amplitude_m
+- spiral_column: helical tube rising. params: height_m, radius_m, turns, tube_radius_m
+- geodesic_shell: geodesic sphere/dome. params: diameter_m, subdivisions
 
 MATERIALS: stainless_304, stainless_316l, bronze, brass, grc, fiberglass, corten_steel, aluminum
 FINISHES: mirror_polish_8, mirror, brushed, hairline, textured, hammered, polished, patina, painted

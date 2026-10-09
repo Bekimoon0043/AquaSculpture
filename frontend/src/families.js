@@ -35,4 +35,24 @@ export const FAMILIES = {
     label: 'Seated Buddha (Figurative)',
     defaults: { height_m: 2.0, pedestal: true },
   },
+  torus_knot: {
+    label: 'Torus Knot',
+    defaults: { p: 2, q: 3, major_radius_m: 1.4, tube_radius_m: 0.16 },
+  },
+  mobius_ribbon: {
+    label: 'Möbius Ribbon',
+    defaults: { radius_m: 1.2, width_m: 0.5, thickness_m: 0.05 },
+  },
+  wave_surface: {
+    label: 'Wave Wall',
+    defaults: { width_m: 3.0, height_m: 2.5, waves: 3, amplitude_m: 0.35 },
+  },
+  spiral_column: {
+    label: 'Spiral Column',
+    defaults: { height_m: 3.0, radius_m: 0.8, turns: 3.0, tube_radius_m: 0.12 },
+  },
+  geodesic_shell: {
+    label: 'Geodesic Shell',
+    defaults: { diameter_m: 3.0, subdivisions: 2 },
+  },
 }

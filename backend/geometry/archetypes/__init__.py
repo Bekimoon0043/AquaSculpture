@@ -3,6 +3,11 @@
 import inspect
 
 from geometry.archetypes.arc_fin_array import generate_arc_fin_array
+from geometry.archetypes.beyond import (generate_geodesic_shell,
+                                        generate_mobius_ribbon,
+                                        generate_spiral_column,
+                                        generate_torus_knot,
+                                        generate_wave_surface)
 from geometry.archetypes.buddha_seated import generate_buddha_seated
 from geometry.archetypes.crescent_inner import generate_crescent_inner
 from geometry.archetypes.open_ring import generate_open_ring
@@ -22,6 +27,11 @@ GENERATORS = {
     "arc_fin_array": generate_arc_fin_array,
     "relief_panel": generate_relief_panel,
     "buddha_seated": generate_buddha_seated,
+    "torus_knot": generate_torus_knot,
+    "mobius_ribbon": generate_mobius_ribbon,
+    "wave_surface": generate_wave_surface,
+    "spiral_column": generate_spiral_column,
+    "geodesic_shell": generate_geodesic_shell,
     "stacked_c_rings": generate_stacked_rings,  # §3 brief name for stacked_rings
 }
 

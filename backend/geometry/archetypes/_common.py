@@ -160,3 +160,86 @@ def finalize(vertices, faces, family: str, material: str,
     if extra:
         metadata.update(extra)
     return {"vertices": v.tolist(), "faces": f.tolist(), "metadata": metadata}
+
+
+def _ellipsoid(rx: float, ry: float, rz: float, center: tuple,
+               seg_u: int = 24, seg_v: int = 16):
+    """Closed UV ellipsoid, poles shared."""
+    vertices: list[list[float]] = []
+    rings: list[list[int]] = []
+    for i in range(seg_v + 1):
+        phi = -np.pi / 2 + np.pi * i / seg_v  # -90..90 deg
+        r = np.cos(phi)
+        y = ry * np.sin(phi)
+        if abs(r) < 1e-12:
+            rings.append([len(vertices)])
+            vertices.append([center[0], center[1] + y, center[2]])
+        else:
+            ring = []
+            for j in range(seg_u):
+                a = 2 * np.pi * j / seg_u
+                ring.append(len(vertices))
+                vertices.append([center[0] + rx * r * np.cos(a),
+                                 center[1] + y,
+                                 center[2] + rz * r * np.sin(a)])
+            rings.append(ring)
+    faces: list[list[int]] = []
+    for i in range(seg_v):
+        a, b = rings[i], rings[i + 1]
+        if len(a) == 1 and len(b) == 1:
+            continue
+        if len(a) == 1:
+            for j in range(seg_u):
+                faces.append([a[0], b[(j + 1) % seg_u], b[j]])
+        elif len(b) == 1:
+            for j in range(seg_u):
+                faces.append([a[j], b[0], a[(j + 1) % seg_u]])
+        else:
+            for j in range(seg_u):
+                j1 = (j + 1) % seg_u
+                faces.append([a[j], b[j], b[j1]])
+                faces.append([a[j], b[j1], a[j1]])
+    return np.array(vertices), np.array(faces, dtype=int)
+
+def _swept_tube(path: np.ndarray, radius: float, sides: int = 12):
+    """Capped tube swept along a 3D polyline (parallel-transport frames)."""
+    n = len(path)
+    tangents = np.gradient(path, axis=0)
+    tangents /= np.linalg.norm(tangents, axis=1, keepdims=True)
+
+    # Initial frame: any vector not parallel to the first tangent.
+    t0 = tangents[0]
+    ref = np.array([0.0, 0.0, 1.0]) if abs(t0[2]) < 0.9 else np.array([1.0, 0.0, 0.0])
+    normal = ref - np.dot(ref, t0) * t0
+    normal /= np.linalg.norm(normal)
+
+    vertices: list[list[float]] = []
+    for i in range(n):
+        t = tangents[i]
+        normal = normal - np.dot(normal, t) * t  # parallel transport
+        normal /= np.linalg.norm(normal)
+        binormal = np.cross(t, normal)
+        for j in range(sides):
+            a = 2 * np.pi * j / sides
+            p = path[i] + radius * (np.cos(a) * normal + np.sin(a) * binormal)
+            vertices.append(p.tolist())
+
+    faces: list[list[int]] = []
+    for i in range(n - 1):
+        for j in range(sides):
+            j1 = (j + 1) % sides
+            a0, b0 = i * sides + j, (i + 1) * sides + j
+            c0, d0 = (i + 1) * sides + j1, i * sides + j1
+            faces.append([a0, b0, c0])
+            faces.append([a0, c0, d0])
+    # End caps (centroid fans).
+    base_c = len(vertices)
+    vertices.append(path[0].tolist())
+    tip_c = len(vertices)
+    vertices.append(path[-1].tolist())
+    for j in range(sides):
+        j1 = (j + 1) % sides
+        faces.append([base_c, j1, j])  # base faces -tangent
+        e = (n - 1) * sides
+        faces.append([tip_c, e + j, e + j1])  # tip faces +tangent
+    return np.array(vertices), np.array(faces, dtype=int)

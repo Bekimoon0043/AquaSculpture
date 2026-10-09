@@ -10,7 +10,8 @@ classical seated-Buddha canon relative to total height H.
 
 import numpy as np
 
-from geometry.archetypes._common import (combine_meshes, finalize,
+from geometry.archetypes._common import (_ellipsoid, _swept_tube,
+                                         combine_meshes, finalize,
                                          revolve_profile)
 
 
