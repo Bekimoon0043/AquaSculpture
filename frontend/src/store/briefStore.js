@@ -50,6 +50,7 @@ const useBriefStore = create((set, get) => ({
   lastRunMs: null,
   runId: 0,
   changedGates: [],  // gate ids whose status changed on the last run
+  chat: [],          // [{role:'user'|'assistant', text?, summary?, changes?, provider?, error?}]
 
   setDockFocus: (dockFocus) => set({ dockFocus }),
   setFamily: (family) => set({ family }),
@@ -151,26 +152,42 @@ const useBriefStore = create((set, get) => ({
     }
   },
 
-  // Phase 2: natural-language prompt -> AI design brief -> engineering loop.
-  runPromptGeneration: async (prompt) => {
-    set({ status: 'loading', error: null })
+  // Conversation, not one-shot (Zookeeper/Meshy lesson): the first message
+  // interprets a prompt into a brief; later messages refine the current
+  // brief. Every assistant turn carries the interpretation echo + the exact
+  // field changes, and engineering re-runs automatically.
+  sendMessage: async (text) => {
+    const { brief } = get()
+    const refining = !!brief
+    set((s) => ({ chat: [...s.chat, { role: 'user', text }],
+                  status: 'loading', error: null }))
     try {
-      const aiResp = await fetch(`${API_BASE_URL}/api/ai/interpret`, {
+      const url = `${API_BASE_URL}/api/ai/${refining ? 'refine' : 'interpret'}`
+      const body = refining ? { brief, instruction: text } : { prompt: text }
+      const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify(body),
       })
-      if (!aiResp.ok) {
-        const detail = await aiResp.text()
-        throw new Error(`AI interpret failed (${aiResp.status}): ${detail.slice(0, 200)}`)
+      if (!resp.ok) {
+        const detail = await resp.text()
+        throw new Error(`AI ${refining ? 'refine' : 'interpret'} failed (${resp.status}): ${detail.slice(0, 200)}`)
       }
-      const { brief } = await aiResp.json()
-      set({ brief, family: brief.sculpture?.family || get().family })
-      await get()._runEngineering(brief)
+      const data = await resp.json()
+      set((s) => ({
+        brief: data.brief,
+        family: data.brief.sculpture?.family || s.family,
+        chat: [...s.chat, { role: 'assistant', summary: data.summary,
+                            changes: data.changes || [], provider: data.provider }],
+      }))
+      await get()._runEngineering(data.brief)
     } catch (e) {
-      set({ status: 'error', error: e.message })
+      set((s) => ({ status: 'error', error: e.message,
+                    chat: [...s.chat, { role: 'assistant', error: e.message }] }))
     }
   },
+  runPromptGeneration: (prompt) => get().sendMessage(prompt),
+  clearChat: () => set({ chat: [] }),
 
   // Phase 1: no AI yet — build a brief from the example + selected family,
   // then run the full deterministic loop (geometry → engineering → cost).

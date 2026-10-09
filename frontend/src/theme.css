@@ -218,3 +218,36 @@ html, body, #root {
   100% { box-shadow: 0 0 0 8px transparent; background: transparent; }
 }
 .gate-flash { animation: gate-flash 1s ease-out 1; }
+
+/* ── Conversational prompt console ───────────────────────── */
+.panel.chat { height: 100%; min-height: 0; }
+.chat-log { flex: 1; min-height: 120px; overflow: auto; display: flex; flex-direction: column; gap: 6px; }
+.chat-user {
+  align-self: flex-end; max-width: 92%; background: var(--bg-raised);
+  border: 1px solid var(--border); border-radius: 8px 8px 2px 8px;
+  padding: 6px 9px; font-size: 12px; line-height: 1.45; white-space: pre-wrap;
+}
+.chat-card {
+  align-self: stretch; background: var(--bg-input); border: 1px solid var(--line-soft);
+  border-left: 2px solid var(--accent); border-radius: 2px 8px 8px 8px;
+  padding: 6px 9px; font-size: 12px; line-height: 1.45; position: relative;
+}
+.chat-card.error-card { border-left-color: var(--danger); color: var(--danger); }
+.chat-tag {
+  display: inline-block; font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent); margin-right: 6px; font-weight: 700;
+}
+.chat-echo { color: var(--text); }
+.chat-changes { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.chat-changes li { display: flex; flex-wrap: wrap; gap: 5px; align-items: baseline; font-size: 11.5px; }
+.chat-changes code { color: var(--text-dim); font-size: 10.5px; font-family: ui-monospace, Consolas, monospace; }
+.chat-changes .before { color: var(--text-faint); text-decoration: line-through; }
+.chat-changes .arrow { color: var(--text-faint); }
+.chat-changes .after { color: var(--ok); font-weight: 600; }
+.chat-provider { position: absolute; top: 4px; right: 7px; font-size: 9px; color: var(--text-faint); }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip {
+  background: transparent; color: var(--text-dim); border: 1px solid var(--border);
+  border-radius: 999px; padding: 2px 8px; font-size: 10.5px; cursor: pointer; font: inherit;
+}
+.chip:hover { border-color: var(--accent); color: var(--text); }

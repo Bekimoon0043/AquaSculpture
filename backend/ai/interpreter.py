@@ -106,19 +106,16 @@ def _validate(brief: dict) -> None:
         raise ValueError(f"family '{family}' is not implemented; choose from {IMPLEMENTED_FAMILIES}")
 
 
-def _call_anthropic(prompt: str, feedback: str | None) -> str:
+def _call_anthropic(system: str, user: str) -> str:
     key = os.environ.get("ANTHROPIC_API_KEY")
     if not key:
         raise AIUnavailable("ANTHROPIC_API_KEY not set")
-    user = prompt if not feedback else (
-        f"{prompt}\n\nYour previous answer was invalid: {feedback}\n"
-        "Return a corrected JSON brief only.")
     resp = httpx.post(
         ANTHROPIC_URL,
         headers={"x-api-key": key, "anthropic-version": "2023-06-01",
                  "content-type": "application/json"},
-        json={"model": os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5"),
-              "max_tokens": 1500, "system": SYSTEM_PROMPT,
+        json={"model": os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5"),
+              "max_tokens": 1500, "system": system,
               "messages": [{"role": "user", "content": user}]},
         timeout=60.0,
     )
@@ -127,20 +124,16 @@ def _call_anthropic(prompt: str, feedback: str | None) -> str:
 
 
 def _call_openai_compatible(url: str, key_env: str, model_env: str,
-                            default_model: str, prompt: str,
-                            feedback: str | None) -> str:
+                            default_model: str, system: str, user: str) -> str:
     key = os.environ.get(key_env)
     if not key:
         raise AIUnavailable(f"{key_env} not set")
-    user = prompt if not feedback else (
-        f"{prompt}\n\nYour previous answer was invalid: {feedback}\n"
-        "Return a corrected JSON brief only.")
     resp = httpx.post(
         url,
         headers={"Authorization": f"Bearer {key}", "content-type": "application/json"},
         json={"model": os.environ.get(model_env, default_model),
               "response_format": {"type": "json_object"},
-              "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+              "messages": [{"role": "system", "content": system},
                            {"role": "user", "content": user}]},
         timeout=60.0,
     )
@@ -148,20 +141,20 @@ def _call_openai_compatible(url: str, key_env: str, model_env: str,
     return resp.json()["choices"][0]["message"]["content"]
 
 
-def _call_deepseek(prompt: str, feedback: str | None) -> str:
+def _call_deepseek(system: str, user: str) -> str:
     return _call_openai_compatible(DEEPSEEK_URL, "DEEPSEEK_API_KEY",
                                    "DEEPSEEK_MODEL", "deepseek-chat",
-                                   prompt, feedback)
+                                   system, user)
 
 
-def _call_openai(prompt: str, feedback: str | None) -> str:
+def _call_openai(system: str, user: str) -> str:
     return _call_openai_compatible(OPENAI_URL, "OPENAI_API_KEY",
                                    "OPENAI_MODEL", "gpt-4o-mini",
-                                   prompt, feedback)
+                                   system, user)
 
 
-def interpret(prompt: str) -> tuple[dict, str]:
-    """Prompt -> (validated design brief, provider name).
+def _run_chain(system: str, user: str) -> tuple[dict, str]:
+    """Provider chain shared by interpret() and refine().
 
     Provider order: DeepSeek, Anthropic, OpenAI. One retry per provider with
     the validation error fed back to the model.
@@ -176,8 +169,11 @@ def interpret(prompt: str) -> tuple[dict, str]:
                            ("openai", _call_openai)):
         feedback = None
         for _attempt in range(2):  # first try + one correction retry
+            message = user if not feedback else (
+                f"{user}\n\nYour previous answer was invalid: {feedback}\n"
+                "Return a corrected JSON brief only.")
             try:
-                raw = call(prompt, feedback)
+                raw = call(system, message)
                 brief = _extract_json(raw)
                 _validate(brief)
                 return brief, provider
@@ -191,3 +187,107 @@ def interpret(prompt: str) -> tuple[dict, str]:
                 feedback = str(e)[:500]  # bad JSON/schema — retry with feedback
                 errors.append(f"{provider} invalid output: {feedback}")
     raise AIFailure("; ".join(errors) or "all providers failed")
+
+
+def interpret(prompt: str) -> tuple[dict, str]:
+    """Prompt -> (validated design brief, provider name)."""
+    return _run_chain(SYSTEM_PROMPT, prompt)
+
+
+REFINE_SUFFIX = """
+
+REFINEMENT MODE: the user already has a design brief and wants a change.
+You receive the CURRENT BRIEF JSON and an INSTRUCTION. Apply the instruction
+to the brief and return the COMPLETE updated brief JSON (same shape, all
+sections). Change only what the instruction implies; keep every other value
+exactly as it is. Output ONLY the JSON.
+"""
+
+
+def refine(brief: dict, instruction: str) -> tuple[dict, str]:
+    """(current brief, natural-language change) -> (updated brief, provider).
+
+    Conversation, not one-shot (Zookeeper/Meshy lesson): "make it bronze",
+    "20% taller", "add 12 bubblers" edit the existing brief in place.
+    """
+    user = (f"CURRENT BRIEF:\n{json.dumps(brief, indent=1)}\n\n"
+            f"INSTRUCTION: {instruction.strip()}")
+    return _run_chain(SYSTEM_PROMPT + REFINE_SUFFIX, user)
+
+
+def describe_brief(brief: dict) -> str:
+    """Deterministic interpretation echo — what the engine understood.
+
+    Works without any AI key, so the user can confirm the reading before
+    engineering runs (plan-before-model lesson from Zookeeper).
+    """
+    sc = brief.get("sculpture") or {}
+    water = brief.get("water") or {}
+    basin = water.get("basin") or {}
+    light = brief.get("lighting") or {}
+    cons = brief.get("constraints") or {}
+    proj = brief.get("project") or {}
+
+    parts = []
+    h = sc.get("height_m")
+    parts.append(" ".join(x for x in (
+        f"{h:g} m" if h else None, sc.get("family"),
+        f"in {sc.get('material')}" if sc.get("material") else None,
+        f"({sc.get('finish')})" if sc.get("finish") else None) if x))
+    if basin:
+        if basin.get("shape") == "rectangular":
+            size = f"{basin.get('length_m', '?')} x {basin.get('width_m', '?')} m"
+        else:
+            size = f"{basin.get('diameter_m', '?')} m"
+        parts.append(" ".join(x for x in (
+            size, basin.get("shape"), basin.get("material"), "basin") if x))
+    feats = [f for f in (water.get("features") or []) if f.get("type") != "still_basin"]
+    if feats:
+        parts.append(" + ".join(
+            f"{f['count']} {f['type']}" if f.get("count") else f["type"] for f in feats))
+    else:
+        parts.append("still water" if basin else "dry (no basin)")
+    lights = []
+    if light.get("sculpture_uplights"):
+        lights.append(f"{light['sculpture_uplights']} uplights")
+    if light.get("submersible_rgb"):
+        lights.append(f"{light['submersible_rgb']} submersible RGB")
+    if light.get("backlit_perforation"):
+        lights.append("backlit perforation")
+    parts.append(", ".join(lights) if lights else "unlit")
+    site = "indoor" if cons.get("indoor") else "outdoor"
+    if cons.get("wind_zone"):
+        site += f", {cons['wind_zone']} wind"
+    if cons.get("public_access"):
+        site += ", public access"
+    parts.append(site)
+    if proj.get("budget_usd"):
+        parts.append(f"budget ${proj['budget_usd']:,.0f}")
+    return " · ".join(parts)
+
+
+def diff_briefs(before, after, prefix: str = "") -> list[dict]:
+    """Flat dotted-path diff: [{path, before, after}] — what a refinement changed."""
+    changes: list[dict] = []
+    if isinstance(before, dict) and isinstance(after, dict):
+        for key in sorted(set(before) | set(after)):
+            path = f"{prefix}.{key}" if prefix else key
+            if key not in before:
+                changes.append({"path": path, "before": None, "after": after[key]})
+            elif key not in after:
+                changes.append({"path": path, "before": before[key], "after": None})
+            else:
+                changes.extend(diff_briefs(before[key], after[key], path))
+    elif isinstance(before, list) and isinstance(after, list) and \
+            all(isinstance(x, dict) for x in before + after):
+        for i in range(max(len(before), len(after))):
+            path = f"{prefix}.{i}"
+            if i >= len(before):
+                changes.append({"path": path, "before": None, "after": after[i]})
+            elif i >= len(after):
+                changes.append({"path": path, "before": before[i], "after": None})
+            else:
+                changes.extend(diff_briefs(before[i], after[i], path))
+    elif before != after:
+        changes.append({"path": prefix, "before": before, "after": after})
+    return changes
