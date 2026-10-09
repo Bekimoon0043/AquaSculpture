@@ -1,4 +1,5 @@
 import Toolbar from './components/Toolbar'
+import PipelineBar from './components/PipelineBar'
 import Dock from './components/Dock'
 import StatusBar from './components/StatusBar'
 import PromptConsole from './components/PromptConsole'
@@ -15,6 +16,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <Toolbar />
+      <PipelineBar />
       <div className="app-main">
         <Dock
           side="left"
