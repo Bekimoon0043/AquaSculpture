@@ -163,7 +163,8 @@ def run_pipeline(brief: dict) -> dict:
         raise HTTPException(status_code=422, detail=str(e))
     gate_result = gates.evaluate_gates(brief, integ, struct, hyd, cost,
                                        panels=panels, lighting=light,
-                                       routing=route, maintainability=maint)
+                                       routing=route, maintainability=maint,
+                                       approvals=brief.get("approvals"))
 
     # Lift the sculpture so its base sits on the basin floor (or y=0).
     base_y = geo["bounding_box"]["min"][1]

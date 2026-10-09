@@ -32,13 +32,33 @@ _PARAMS = {
 }
 
 
+def headline(r: dict) -> dict:
+    """Compare-table metrics for one pipeline result (scatter + compare UI)."""
+    illum = (r.get("lighting") or {}).get("illumination") or {}
+    return {
+        "mass_kg": r["sculpture"]["metadata"]["mass_kg"],
+        "steel_kg": r["skeleton"]["total_steel_kg"],
+        "total_usd": r["cost"]["total_usd"],
+        "over_budget": r["cost"]["over_budget"],
+        "gates_pass": not r["gates"]["hard_fail"],
+        "gates": {g["id"]: g["status"] for g in r["gates"]["gates"]},
+        "panels": r["panelization"]["panel_count"],
+        "weld_m": r["panelization"]["total_weld_seam_m"],
+        "base_moment_knm": r["structural"]["total_base_moment_knm"],
+        "deflection_mm": r["structural"]["analysis"]["deflection_mm"],
+        "pump_kw": r["hydraulics"]["motor_kw"],
+        "lux_coverage_pct": illum.get("coverage_pct"),
+        "height_m": r["geo_quantities"]["bounding_box"]["size"][1],
+    }
+
+
 def generate_concepts(base_brief: dict, run_pipeline, count: int = 3) -> dict:
     sc = base_brief.get("sculpture") or {}
     height = sc.get("height_m", 3.0)
     concepts = []
     for spec in CONCEPT_MATRIX[:count]:
         brief = {
-            **base_brief,
+            **{k: v for k, v in base_brief.items() if k != "approvals"},
             "sculpture": {**sc, "family": spec["family"],
                           "material": spec["material"], "finish": spec["finish"],
                           "parameters": _PARAMS[spec["family"]](height)},
@@ -47,13 +67,7 @@ def generate_concepts(base_brief: dict, run_pipeline, count: int = 3) -> dict:
         concepts.append({
             "theme": spec["theme"],
             "brief": brief,
-            "headline": {
-                "mass_kg": r["sculpture"]["metadata"]["mass_kg"],
-                "total_usd": r["cost"]["total_usd"],
-                "over_budget": r["cost"]["over_budget"],
-                "gates_pass": not r["gates"]["hard_fail"],
-                "panels": r["panelization"]["panel_count"],
-            },
+            "headline": headline(r),
         })
     return {"concepts": concepts,
             "note": "controlled design families — every concept is engineered "

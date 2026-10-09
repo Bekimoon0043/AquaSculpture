@@ -169,6 +169,27 @@
         "amplitude_deg": { "type": "number", "exclusiveMinimum": 0 },
         "ramp_time_s": { "type": "number", "exclusiveMinimum": 0 }
       }
+    },
+    "approvals": {
+      "type": "object",
+      "description": "Human sign-offs for the two non-automatic gates (scope §28). Recorded in the brief so they travel with the project file.",
+      "additionalProperties": false,
+      "properties": {
+        "G1": { "$ref": "#/$defs/approval" },
+        "G10": { "$ref": "#/$defs/approval" }
+      }
+    }
+  },
+  "$defs": {
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["by", "at"],
+      "properties": {
+        "by": { "type": "string", "minLength": 1 },
+        "at": { "type": "string" },
+        "note": { "type": "string" }
+      }
     }
   }
 }

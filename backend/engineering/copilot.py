@@ -15,6 +15,7 @@ SIZE_PARAMS = ("diameter_m", "major_radius_m", "height_m", "section_width_m",
 def scaled_brief(brief: dict, factor: float) -> dict:
     """Scale the sculpture by `factor`; site/basin stay fixed."""
     b = copy.deepcopy(brief)
+    b.pop("approvals", None)  # a new variant is unapproved
     sc = b["sculpture"]
     if sc.get("height_m"):
         sc["height_m"] = round(sc["height_m"] * factor, 4)

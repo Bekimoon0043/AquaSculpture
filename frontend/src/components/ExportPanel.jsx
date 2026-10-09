@@ -14,9 +14,21 @@ function download(blob, filename) {
 
 export default function ExportPanel() {
   const brief = useBriefStore((s) => s.brief)
+  const engineering = useBriefStore((s) => s.engineering)
+  const approve = useBriefStore((s) => s.approve)
+  const approver = useBriefStore((s) => s.approver)
+  const setApprover = useBriefStore((s) => s.setApprover)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const project = (brief?.project?.name || 'aquasculptor').replace(/\s+/g, '_')
+
+  // G10 (Onshape release lesson): sign-off is human, but only offered when
+  // every automatic gate is pass/warning — and it is void on any failure.
+  const gates = engineering?.gates?.gates || []
+  const blocking = gates.filter((g) => g.id !== 'G10' && g.status === 'fail')
+  const open = gates.filter((g) => g.id !== 'G10' && g.status === 'not_evaluated')
+  const canApprove = engineering && blocking.length === 0 && open.length === 0
+  const g10 = brief?.approvals?.G10
 
   async function post(endpoint, filename) {
     setBusy(true)
@@ -45,6 +57,33 @@ export default function ExportPanel() {
   return (
     <div className="panel">
       <h2>Export</h2>
+
+      <h3 className="form-section">G10 · Production package approval</h3>
+      {g10 ? (
+        <div className={`approval ${engineering?.gates?.production_ready ? 'ok' : 'bad'}`}>
+          {engineering?.gates?.production_ready ? 'PRODUCTION READY — ' : 'APPROVAL VOID (gate failure) — '}
+          signed by <strong>{g10.by}</strong> on {g10.at.slice(0, 10)}{g10.note ? ` — ${g10.note}` : ''}
+          <button className="btn mini" onClick={() => approve('G10', null)}>Revoke</button>
+        </div>
+      ) : (
+        <>
+          <div className="approval">
+            <input type="text" placeholder="approver" value={approver} onChange={(e) => setApprover(e.target.value)} />
+            <button className="btn" disabled={!canApprove || !approver.trim()}
+                    onClick={() => approve('G10', { by: approver.trim(), note: 'production package approved' })}>
+              Approve package
+            </button>
+          </div>
+          {engineering && !canApprove && (
+            <p className="hint">
+              {blocking.length > 0 && `Blocked by failing gate${blocking.length > 1 ? 's' : ''}: ${blocking.map((g) => g.id).join(', ')}. `}
+              {open.length > 0 && `Open: ${open.map((g) => `${g.id} ${g.label}`).join(', ')}.`}
+            </p>
+          )}
+        </>
+      )}
+
+      <h3 className="form-section">Deliverables</h3>
       <button className="btn primary" disabled={!brief || busy}
               onClick={() => post('/api/deliverables/package', `${project}_package.zip`)}>
         {busy ? 'Packaging…' : 'Engineering package (ZIP)'}

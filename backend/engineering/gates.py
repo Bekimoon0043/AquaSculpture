@@ -24,8 +24,16 @@ GATES = [
 def evaluate_gates(brief: dict, integrity: dict, structural: dict,
                    hydraulics: dict, cost: dict, panels: dict | None = None,
                    lighting: dict | None = None, routing: dict | None = None,
-                   maintainability: dict | None = None) -> dict:
+                   maintainability: dict | None = None,
+                   approvals: dict | None = None) -> dict:
     results: dict[str, dict] = {}
+    approvals = approvals or {}
+
+    def approved(gid):
+        a = approvals.get(gid)
+        if not a or not a.get("by"):
+            return None
+        return f"approved by {a['by']}" + (f" on {a['at'][:10]}" if a.get("at") else "")
 
     def put(gid, status, note=""):
         results[gid] = {"status": status, "note": note}
@@ -33,8 +41,11 @@ def evaluate_gates(brief: dict, integrity: dict, structural: dict,
     # G0: pipeline only runs on a schema-shaped brief.
     put("G0", "pass", "brief accepted by pipeline")
 
-    # G1: single generated concept; human approval happens in the UI.
-    put("G1", "not_evaluated", "multi-concept approval flow not built yet")
+    # G1: concept approval is a human decision, recorded in brief.approvals.
+    if approved("G1"):
+        put("G1", "pass", approved("G1"))
+    else:
+        put("G1", "not_evaluated", "awaiting concept approval (Concepts tab)")
 
     # G2: geometry integrity forensics.
     if integrity["passed"]:
@@ -131,14 +142,22 @@ def evaluate_gates(brief: dict, integrity: dict, structural: dict,
     else:
         put("G9", "pass", "within budget")
 
-    # G10: everything above must pass/warn for a package to be approved.
-    put("G10", "not_evaluated", "package approval is a human sign-off")
+    # G10: human sign-off, but it is void the moment any engineering gate
+    # fails — approval never overrides the engine (scope §28).
+    engineering_fail = any(r["status"] == "fail" for r in results.values())
+    if approved("G10") and engineering_fail:
+        put("G10", "fail", "approval void — an engineering gate is failing")
+    elif approved("G10"):
+        put("G10", "pass", approved("G10"))
+    else:
+        put("G10", "not_evaluated", "package approval is a human sign-off (Export tab)")
 
     hard_fail = any(r["status"] == "fail" for r in results.values())
     evaluated = [g for g in results if results[g]["status"] != "not_evaluated"]
     return {
         "gates": [{"id": gid, "label": label, **results[gid]}
                   for gid, label in GATES],
-        "production_ready": not hard_fail and len(evaluated) >= 5,
+        "production_ready": (not hard_fail and len(evaluated) >= 5
+                             and results["G10"]["status"] == "pass"),
         "hard_fail": hard_fail,
     }

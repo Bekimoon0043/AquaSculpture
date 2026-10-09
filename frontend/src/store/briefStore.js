@@ -51,6 +51,8 @@ const useBriefStore = create((set, get) => ({
   runId: 0,
   changedGates: [],  // gate ids whose status changed on the last run
   chat: [],          // [{role:'user'|'assistant', text?, summary?, changes?, provider?, error?}]
+  approver: (() => { try { return localStorage.getItem('as.approver') || '' } catch { return '' } })(),
+  projects: [],      // saved project names from /api/project/list
 
   setDockFocus: (dockFocus) => set({ dockFocus }),
   setFamily: (family) => set({ family }),
@@ -106,8 +108,60 @@ const useBriefStore = create((set, get) => ({
       ...brief,
       sculpture: { ...brief.sculpture, family, parameters: get().familyDefaults(family) },
     }
+    delete next.approvals  // a different concept is unapproved
     set({ brief: next, family, stale: true })
     get().scheduleRun()
+  },
+
+  // Human gates (scope §28 G1/G10): approvals live in the brief so they
+  // travel with the project file; null revokes. Engineering re-runs so the
+  // gate chain reflects the sign-off (or voids it on a failure).
+  setApprover: (approver) => {
+    try { localStorage.setItem('as.approver', approver) } catch { /* private window */ }
+    set({ approver })
+  },
+  approve: (gate, approval) => {
+    const { brief } = get()
+    if (!brief) return
+    const approvals = { ...(brief.approvals || {}) }
+    if (approval) approvals[gate] = { ...approval, at: new Date().toISOString() }
+    else delete approvals[gate]
+    const next = { ...brief }
+    if (Object.keys(approvals).length) next.approvals = approvals
+    else delete next.approvals
+    set({ brief: next, stale: true })
+    get().scheduleRun()
+  },
+
+  // Project files: {brief, show} — approvals ride inside the brief.
+  listProjects: async () => {
+    try {
+      const r = await fetch(`${API_BASE_URL}/api/project/list`)
+      if (r.ok) set({ projects: (await r.json()).projects })
+    } catch { /* backend offline — status bar shows it */ }
+  },
+  saveProject: async (name) => {
+    const { brief, show } = get()
+    if (!brief) return
+    const r = await fetch(`${API_BASE_URL}/api/project/save`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, data: { brief, show } }),
+    })
+    if (!r.ok) { set({ error: `save failed: ${r.status}` }); return }
+    await get().listProjects()
+  },
+  loadProject: async (name) => {
+    set({ status: 'loading', error: null })
+    try {
+      const r = await fetch(`${API_BASE_URL}/api/project/${encodeURIComponent(name)}`)
+      if (!r.ok) throw new Error(`open failed: ${r.status}`)
+      const { data } = await r.json()
+      set({ brief: data.brief, show: data.show || [], chat: [],
+            family: data.brief?.sculpture?.family || get().family })
+      await get()._runEngineering(data.brief)
+    } catch (e) {
+      set({ status: 'error', error: e.message })
+    }
   },
 
   scheduleRun: () => {

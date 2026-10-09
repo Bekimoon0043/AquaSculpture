@@ -251,3 +251,39 @@ html, body, #root {
   border-radius: 999px; padding: 2px 8px; font-size: 10.5px; cursor: pointer; font: inherit;
 }
 .chip:hover { border-color: var(--accent); color: var(--text); }
+
+/* ── Concept explorer, approvals, project controls ───────── */
+.scatter { display: block; background: var(--bg-input); border: 1px solid var(--line-soft); border-radius: 5px; }
+.scatter .axis { stroke: var(--line-strong); stroke-width: 1; }
+.scatter .axis-label { fill: var(--text-faint); font-size: 8px; text-anchor: middle; }
+.scatter .tick { fill: var(--text-faint); font-size: 7.5px; }
+.scatter .dot { cursor: pointer; stroke: var(--bg-input); stroke-width: 1; }
+.scatter .dot.pass { fill: var(--ok); }
+.scatter .dot.fail { fill: var(--danger); }
+.scatter .dot.sel { stroke: var(--accent); stroke-width: 2; }
+.scatter .front { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 3 2; }
+.scatter .front-dot { fill: var(--accent); opacity: 0.8; }
+.compare td.better { color: var(--ok); font-weight: 600; }
+.compare td.worse { color: var(--danger); }
+.concept-grid { display: flex; flex-direction: column; gap: 6px; }
+.concept-card {
+  border: 1px solid var(--border); border-radius: 5px; padding: 8px;
+  display: flex; flex-direction: column; gap: 4px; cursor: pointer; background: var(--bg-raised);
+}
+.concept-card:hover { border-color: var(--line-strong); }
+.concept-card.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.concept-head { display: flex; justify-content: space-between; align-items: baseline; }
+.concept-head .ok { color: var(--ok); font-size: 10.5px; font-weight: 700; }
+.concept-head .bad { color: var(--danger); font-size: 10.5px; font-weight: 700; }
+.concept-metrics { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--text-dim); }
+.approval { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; }
+.approval input[type="text"] {
+  flex: 1; min-width: 80px; height: 26px; background: var(--bg-input); color: var(--text);
+  border: 1px solid var(--border); border-radius: 5px; padding: 0 7px; font: inherit; font-size: 12px;
+}
+.approval.ok { color: var(--ok); }
+.approval.bad { color: var(--danger); }
+.toolbar .project-name {
+  width: 150px; height: 28px; background: var(--bg-input); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 0 8px; font: inherit; font-size: 12px;
+}
