@@ -5,3 +5,4 @@ jsonschema
 numpy
 httpx
 pytest
+anthropic

@@ -2,7 +2,8 @@
 
 Hybrid architecture (PLAN.md §1): the LLM only produces creative intent as
 structured JSON; every engineering number is computed deterministically
-downstream. Anthropic is the primary provider, OpenAI the fallback.
+downstream. Claude (official `anthropic` SDK) is the primary provider; OpenAI
+and DeepSeek are optional fallbacks, disabled when AI_PROVIDER=anthropic.
 
 The LLM may only choose from the IMPLEMENTED families below — the schema
 enum lists future families too, but those would fail in the geometry engine.
@@ -13,6 +14,7 @@ import os
 import re
 from pathlib import Path
 
+import anthropic
 import httpx
 import jsonschema
 
@@ -107,20 +109,29 @@ def _validate(brief: dict) -> None:
 
 
 def _call_anthropic(system: str, user: str) -> str:
-    key = os.environ.get("ANTHROPIC_API_KEY")
-    if not key:
+    """Claude via the official SDK. Thinking stays on (adaptive by default on
+    Opus 5.5); server-side refusal fallback is enabled so a policy decline
+    re-runs on the fallback model inside the same call."""
+    if not os.environ.get("ANTHROPIC_API_KEY"):
         raise AIUnavailable("ANTHROPIC_API_KEY not set")
-    resp = httpx.post(
-        ANTHROPIC_URL,
-        headers={"x-api-key": key, "anthropic-version": "2023-06-01",
-                 "content-type": "application/json"},
-        json={"model": os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5"),
-              "max_tokens": 1500, "system": system,
-              "messages": [{"role": "user", "content": user}]},
-        timeout=60.0,
+    client = anthropic.Anthropic()
+    response = client.beta.messages.create(
+        model=os.environ.get("ANTHROPIC_MODEL", "claude-opus-5-5"),
+        max_tokens=16000,
+        system=system,
+        messages=[{"role": "user", "content": user}],
+        betas=["server-side-fallback-2026-07-01"],
+        fallbacks="default",
     )
-    resp.raise_for_status()
-    return resp.json()["content"][0]["text"]
+    if response.stop_reason == "refusal":
+        details = getattr(response, "stop_details", None)
+        why = getattr(details, "explanation", None) or "policy refusal"
+        raise AIFailure(f"anthropic refused: {why}")
+    text = "".join(block.text for block in response.content
+                   if getattr(block, "type", "") == "text")
+    if response.stop_reason == "max_tokens":
+        raise ValueError("response truncated at max_tokens")
+    return text
 
 
 def _call_openai_compatible(url: str, key_env: str, model_env: str,
@@ -153,20 +164,34 @@ def _call_openai(system: str, user: str) -> str:
                                    system, user)
 
 
+PROVIDERS = {"anthropic": _call_anthropic, "openai": _call_openai,
+             "deepseek": _call_deepseek}
+DEFAULT_ORDER = ("anthropic", "openai", "deepseek")
+
+
+def _providers():
+    """Provider chain. AI_PROVIDER=anthropic (the default in .env) pins the
+    chain to Claude; a comma-separated list sets a custom order."""
+    pinned = os.environ.get("AI_PROVIDER", "").strip()
+    names = [n.strip() for n in pinned.split(",") if n.strip()] or list(DEFAULT_ORDER)
+    unknown = [n for n in names if n not in PROVIDERS]
+    if unknown:
+        raise AIFailure(f"unknown AI_PROVIDER {unknown}; choose from {sorted(PROVIDERS)}")
+    return [(n, PROVIDERS[n]) for n in names]
+
+
 def _run_chain(system: str, user: str) -> tuple[dict, str]:
     """Provider chain shared by interpret() and refine().
 
-    Provider order: DeepSeek, Anthropic, OpenAI. One retry per provider with
-    the validation error fed back to the model.
+    Default order: Claude, OpenAI, DeepSeek (AI_PROVIDER overrides). One retry
+    per provider with the validation error fed back to the model.
     """
     if not any(os.environ.get(k) for k in
                ("DEEPSEEK_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY")):
         raise AIUnavailable("no AI provider keys configured")
 
     errors: list[str] = []
-    for provider, call in (("deepseek", _call_deepseek),
-                           ("anthropic", _call_anthropic),
-                           ("openai", _call_openai)):
+    for provider, call in _providers():
         feedback = None
         for _attempt in range(2):  # first try + one correction retry
             message = user if not feedback else (
@@ -180,7 +205,7 @@ def _run_chain(system: str, user: str) -> tuple[dict, str]:
             except AIUnavailable as e:
                 errors.append(str(e))
                 break  # no key for this provider — move on
-            except (httpx.HTTPError, KeyError, IndexError) as e:
+            except (anthropic.APIError, httpx.HTTPError, KeyError, IndexError) as e:
                 errors.append(f"{provider}: {e}")
                 break  # transport/API failure — try next provider
             except (ValueError, jsonschema.ValidationError) as e:
