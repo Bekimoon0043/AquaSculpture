@@ -16,6 +16,7 @@ from geometry.archetypes.organic_flame import generate_organic_flame
 from geometry.archetypes.relief_panel import generate_relief_panel
 from geometry.archetypes.ribbon_knot import generate_ribbon_knot
 from geometry.archetypes.stacked_rings import generate_stacked_rings
+from geometry.archetypes.standing_figure import generate_standing_figure
 from geometry.archetypes.twisted_torus import generate_twisted_torus
 
 GENERATORS = {
@@ -28,6 +29,7 @@ GENERATORS = {
     "arc_fin_array": generate_arc_fin_array,
     "relief_panel": generate_relief_panel,
     "buddha_seated": generate_buddha_seated,
+    "standing_figure": generate_standing_figure,
     "torus_knot": generate_torus_knot,
     "mobius_ribbon": generate_mobius_ribbon,
     "wave_surface": generate_wave_surface,
@@ -68,9 +70,10 @@ def generate(family: str, params: dict, material: str, height_m: float) -> dict:
 # not from hand-written per-family UI). Ranges follow naming rules; a
 # generator may declare PARAM_CHOICES = {"name": (...)} for enum params.
 _HIDDEN = {"material", "shell_thickness_m", "elements", "outline"}
-_UNIT_INTERVAL = {"morph", "taper", "aspect_xy", "rib_amplitude"}
+_UNIT_INTERVAL = {"morph", "taper", "aspect_xy", "rib_amplitude", "pedestal_ratio", "fold_depth"}
 _INT_NAMES = {"segments", "tube_segments", "radial_segments", "fin_segments",
-              "subdivisions", "p", "q", "waves", "turns"}
+              "subdivisions", "p", "q", "waves", "turns", "crown_rays",
+              "drapery_folds"}
 
 
 def _range_for(name: str, default, is_int: bool) -> dict:

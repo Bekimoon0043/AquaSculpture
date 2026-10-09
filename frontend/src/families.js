@@ -42,6 +42,10 @@ export const FAMILIES = {
     label: 'Seated Buddha (Figurative)',
     defaults: { height_m: 2.0, pedestal: true },
   },
+  standing_figure: {
+    label: 'Standing Figure / Liberty (Figurative)',
+    defaults: { height_m: 6.0, pedestal: true, pedestal_ratio: 0.3, crown_rays: 7, drapery_folds: 9 },
+  },
   torus_knot: {
     label: 'Torus Knot',
     defaults: { p: 2, q: 3, major_radius_m: 1.4, tube_radius_m: 0.16 },

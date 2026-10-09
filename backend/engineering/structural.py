@@ -46,6 +46,7 @@ SOLIDITY = {
     "arc_fin_array": 0.50,
     "relief_panel": 0.95,
     "buddha_seated": 0.85,
+    "standing_figure": 0.85,
 }
 DRAG_SOLID = 1.3                  # bluff solid body
 DRAG_OPEN = 0.9                   # open/perforated frame

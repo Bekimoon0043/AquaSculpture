@@ -143,3 +143,36 @@ def test_buddha_seated():
     assert bbox["size"][1] == pytest.approx(2.0, rel=0.05)
     # Seated figure: width/depth should be a sane fraction of height
     assert 0.3 < bbox["size"][0] / bbox["size"][1] < 0.75
+
+
+def test_standing_figure_liberty_proportions():
+    from engineering import geo_calc
+    mesh = generate("standing_figure", {"height_m": 6.0}, "bronze", 6.0)
+    meta = mesh["metadata"]
+    assert meta["family"] == "standing_figure"
+    assert meta["pose"] == "torch_raised" and meta["crown_rays"] == 7
+    assert meta["mass_kg"] > 0
+    bbox = geo_calc.bounding_box(mesh["vertices"])
+    assert bbox["size"][1] == pytest.approx(6.0, rel=1e-3)
+    assert bbox["min"][1] == pytest.approx(0.0, abs=1e-6)
+    # Slender standing figure: width a small fraction of height.
+    assert 0.25 < bbox["size"][0] / bbox["size"][1] < 0.5
+    # The torch is the highest point and sits to the figure's right (+x).
+    v = __import__("numpy").asarray(mesh["vertices"])
+    top = v[v[:, 1].argmax()]
+    assert top[0] > 0.05 * 6.0
+
+
+def test_standing_figure_variants_and_validation():
+    from engineering import geo_calc
+    plain = generate("standing_figure",
+                     {"height_m": 4.0, "pedestal": False, "raised_arm": False,
+                      "torch": False, "tablet": False, "crown_rays": 0},
+                     "stainless_316l", 4.0)
+    bbox = geo_calc.bounding_box(plain["vertices"])
+    assert bbox["size"][1] == pytest.approx(4.0, rel=1e-3)
+    assert plain["metadata"]["pose"] == "arms_down"
+    with_ped = generate("standing_figure", {"height_m": 4.0, "pedestal": True}, "bronze", 4.0)
+    assert with_ped["metadata"]["mass_kg"] > plain["metadata"]["mass_kg"]
+    with pytest.raises(ValueError):
+        generate("standing_figure", {"height_m": 4.0, "pedestal_ratio": 0.9}, "bronze", 4.0)

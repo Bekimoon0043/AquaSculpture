@@ -28,7 +28,7 @@ DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 IMPLEMENTED_FAMILIES = (
     "open_ring", "crescent_inner", "ribbon_knot", "organic_flame",
     "stacked_rings", "stacked_c_rings", "twisted_torus",
-    "arc_fin_array", "relief_panel", "buddha_seated",
+    "arc_fin_array", "relief_panel", "buddha_seated", "standing_figure",
     "torus_knot", "mobius_ribbon", "wave_surface", "spiral_column",
     "geodesic_shell",
 )
@@ -62,6 +62,7 @@ IMPLEMENTED_FAMILIES (choose ONLY from these) with typical parameters:
 - arc_fin_array: radial array of curved tapered fins (landmark entrances). params: fin_count, height_m, arc_radius_m, layout_diameter_m, base_width_m, tip_width_m
 - relief_panel: silhouette relief panel (maps, logos) with optional LED perforation grid. params: thickness_m, perforation_dot_spacing_m
 - buddha_seated: seated Buddha in meditation pose on lotus pedestal (figurative). params: height_m, pedestal (bool)
+- standing_figure: standing draped figure, Statue-of-Liberty type — raised torch arm, rayed crown, tablet, stepped pedestal (figurative; any 'Liberty', 'torch-bearing figure', 'robed statue' request). params: height_m (overall incl. pedestal + torch), pedestal (bool), pedestal_ratio (0-0.6), raised_arm (bool), torch (bool), crown_rays (int), tablet (bool), drapery_folds (int). Patinated copper-green = material bronze, finish patina
 - torus_knot: mathematical knot sculpture. params: p, q, major_radius_m, tube_radius_m
 - mobius_ribbon: möbius strip with thickness. params: radius_m, width_m, thickness_m
 - wave_surface: undulating ribbon wall. params: width_m, height_m, waves, amplitude_m

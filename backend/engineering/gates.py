@@ -65,7 +65,8 @@ def evaluate_gates(brief: dict, integrity: dict, structural: dict,
         put("G4", "pass", "all safety factors >= required")
     else:
         weak = [k for k, v in sf.items()
-                if isinstance(v, (int, float)) and v < sf.get("required", 1.5)]
+                if isinstance(v, (int, float)) and not isinstance(v, bool)
+                and k != "required" and v < sf.get("required", 1.5)]
         put("G4", "fail", f"safety factors below required: {weak}")
 
     # G5: hydraulics — flow consistent with requested features.
